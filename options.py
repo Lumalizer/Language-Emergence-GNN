@@ -10,7 +10,7 @@ class ExperimentOptions:
     embedding_size: int = 50
     hidden_size: int = 20
     game_size: int = 2
-    vocab_size: int = 60
+    vocab_size: int = 10
     tau_s: float = 10.0
     mixed_distractor_selection: bool = False
 
