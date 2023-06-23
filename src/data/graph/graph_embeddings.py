@@ -1,19 +1,17 @@
 import torch
 import numpy as np
-from options import ExperimentOptions
 from torch_geometric.data import Data
 from torch_geometric.nn import GATv2Conv
 
 
-class NodeEmbeddings(torch.nn.Module):
-    def __init__(self, options: ExperimentOptions):
-        super(NodeEmbeddings, self).__init__()
-        self.options = options
+class GraphEmbeddings(torch.nn.Module):
+    def __init__(self, embedding_size):
+        super(GraphEmbeddings, self).__init__()
         num_node_features = 1
 
         # we need to use some GNN that supports edge attributes
         # https://pytorch-geometric.readthedocs.io/en/latest/notes/cheatsheet.html
-        self.emb = GATv2Conv(num_node_features, options.embedding_size//5, edge_dim=1)
+        self.emb = GATv2Conv(num_node_features, embedding_size//3, edge_dim=1)
 
     @torch.no_grad()
     def forward(self, data: Data) -> np.ndarray:

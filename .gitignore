@@ -1,6 +1,8 @@
 # the generated files should be ignored
 .vscode
 assets/output
+assets/embedded_data
+results
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

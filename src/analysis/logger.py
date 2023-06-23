@@ -1,6 +1,7 @@
 import json
 from egg.core.callbacks import ConsoleLogger
 
+
 class ResultsCollector(ConsoleLogger):
     def __init__(self, results: list, print_to_console: bool, print_train_loss=True, as_json=True):
         super().__init__(as_json=as_json, print_train_loss=print_train_loss)
@@ -16,7 +17,7 @@ class ResultsCollector(ConsoleLogger):
 
         results = json.dumps(dump)
         self.results.append(results)
-        
+
         if self.print_to_console:
             output_message = ", ".join(sorted([f"{k}={v}" for k, v in dump.items()]))
             output_message = f"{mode}: epoch {epoch}, loss {loss}, " + output_message

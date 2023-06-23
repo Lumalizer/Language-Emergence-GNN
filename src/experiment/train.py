@@ -1,7 +1,7 @@
 import egg.core as core
 from options import ExperimentOptions
-from utils.timer import timer
-from utils.logger import ResultsCollector
+from analysis.timer import timer
+from analysis.logger import ResultsCollector
 
 
 @timer

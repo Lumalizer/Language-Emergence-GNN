@@ -1,14 +1,12 @@
 import torch
 import numpy as np
 import torch.nn as nn
-from options import ExperimentOptions
 
 
 class ImageEmbeddings(nn.Module):
-    def __init__(self, options: ExperimentOptions):
+    def __init__(self, embedding_size):
         super(ImageEmbeddings, self).__init__()
-        self.options = options
-        self.emb = nn.Linear(160000, options.embedding_size, bias=False)
+        self.emb = nn.Linear(160000, embedding_size, bias=False)
 
     @torch.no_grad()
     def forward(self, data) -> np.ndarray:
