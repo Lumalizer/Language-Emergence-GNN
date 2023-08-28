@@ -14,7 +14,7 @@ def extract_test_data(df: pd.DataFrame):
     return df[mask]
 
 
-def plot_dataframe(df: pd.DataFrame, title: str, show_plot=True, save=True, mode='both', facet_col="max_len", facet_row="game_size"):
+def plot_dataframe(df: pd.DataFrame, title: str, show_plot=True, save=True, save_target=None, mode='both', facet_col="max_len", facet_row="game_size"):
     colors = ["#FFA500", "#6495ED"]
 
     if mode == 'test':
@@ -68,8 +68,12 @@ def plot_dataframe(df: pd.DataFrame, title: str, show_plot=True, save=True, mode
     show_plot and figure.show()
 
     if save:
-        os.makedirs("../results", exist_ok=True)
+        if not save_target:
+            os.makedirs("../results", exist_ok=True)
+            now = datetime.now().strftime("%Y_%d_%m_%H_%M_%S__")
+            save_target = f"../results/{now}"
+        
         title = title.replace('<br>', '')
-        now = datetime.now().strftime("%Y_%d_%m_%H_%M_%S__")
+        
         # orca requires external installation, can use pip install kaleido instead
-        figure.write_image(f"../results/{now}_{str(title)}.png", engine="orca")
+        figure.write_image(f"{save_target}/{str(title)}.png", engine="orca")

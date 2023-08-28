@@ -7,9 +7,8 @@ from options import ExperimentOptions
 import torch.nn.functional as F
 
 
-def get_game(options: ExperimentOptions, message_output_storage):
+def get_game(options: ExperimentOptions):
     def loss_nll(_sender_input, _message, _receiver_input, receiver_output, labels, _aux_input):
-        message_output_storage.append(_message)
         nll = F.nll_loss(receiver_output, labels, reduction="none")
         acc = (labels == receiver_output.argmax(dim=1)).float()
         return nll, {"acc": acc}

@@ -18,4 +18,4 @@ def perform_training(options: ExperimentOptions, train_loader, valid_loader, gam
 
     trainer.train(n_epochs=options.n_epochs)
     core.close()
-    return '\n'.join(results)
+    return '\n'.join(results), trainer

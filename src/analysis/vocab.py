@@ -1,40 +1,35 @@
 import os
 import plotly.express as px
-import json
 import pandas as pd
+from sklearn.manifold import TSNE
+from sklearn.metrics import pairwise_distances
+from analysis.message_embeddings import MessageEmbeddings
+import torch
 
 
-def analyze_vocab(title, filename, specific_target=''):
+def analyze_vocab(title, filename="2023_19_07_13_54_38graphvsimage/vocab2023_19_07_14_46_23___graph_maxlen_4_cellgru_game10_vocab5_hidden60_unseen1_epochs300", specific_target=''):
     path = os.path.join(os.getcwd(), "results/", filename + ".json")
-    data: dict[str, list[str, list[int]]] = json.load(open(path))
+    df = pd.read_json(path)
 
-    data = [v for i, (k, v) in enumerate(data.items()) if sum(v[1]) and i > len(data)//1.5]
+    messages = df['message'].tolist()
+    embedder = MessageEmbeddings(len(messages[0]), 2)
+    messages = torch.stack([torch.tensor(message) for message in messages]).type(dtype=torch.float32)
+    embedded_messages = embedder.forward(messages)
 
-    # print(sorted(data))
-    print(len(data))
-    print(data[0])
+    distance_matrix = pairwise_distances(embedded_messages, metric='cosine')
+    model = TSNE(n_components=2, metric='precomputed', init='random', random_state=42)
+    transformed = model.fit_transform(distance_matrix)
 
-    targets = [p[0] for p in data]
-
-    if not specific_target:
-        words = [str(p[1]) for p in data]
-    else:
-        words = [str(p[1]) for p in data if p[0] == specific_target]
-        title = title + f" for '{specific_target}'"
-
-    fig = px.histogram(words, title=title, labels={'value': 'sentence', 'count': 'count'})
-    fig.update_layout(showlegend=False)
-    fig.update_layout(font=dict(size=32))
-    fig.update_xaxes(categoryorder="total descending")
+    fig = px.scatter(transformed, x=0, y=1, color=df['message'].apply(str).tolist(), hover_name=df['target'].tolist())
+    fig.update_layout(title=title)
     fig.show()
 
 
-def store_vocab_info(options, target_labels, messages, target_folder):
-    m = []
-    for batch in messages:
-        m.extend(batch)
-
-    d = {i: (str(target_labels[i]), m[i].tolist()) for i in range(len(target_labels))}
+def store_vocab_info(options, target_labels, messages, accuracies, target_folder):
+    df = pd.DataFrame({'target': target_labels, 'message': messages, 'accuracy': accuracies})
 
     with open(f'{target_folder}/{"vocab" + str(options)}.json', 'w') as f:
-        json.dump(d, f)
+        df.to_json(f)
+
+if __name__ == '__main__':
+    analyze_vocab("Vocab distribution")

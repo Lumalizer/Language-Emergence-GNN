@@ -27,7 +27,7 @@ class GraphBuilder(DatastringBuilder):
 
         graphstring = graphstring.replace('.png', '')
         nodes = [0]
-        first_shape_position = 0
+        first_shape_pos = None
         edges = []
 
         graphelements = graphstring.split('_')
@@ -38,8 +38,8 @@ class GraphBuilder(DatastringBuilder):
 
             nodes.append(self.shapes_codes[shape])
             
-            if len(nodes) == 1:
-                first_shape_position = i
+            if len(nodes) == 2:
+                first_shape_pos = i
                 continue
 
             ishigh = lambda x: x in [0, 1]
@@ -47,15 +47,15 @@ class GraphBuilder(DatastringBuilder):
             isleft = lambda x: x in [0, 2]
             isright = lambda x: x in [1, 3]
 
-            ishigh(first_shape_position) and edges.append((2, 0, self.pos_codes['above']))
-            islow(first_shape_position) and edges.append((2, 0, self.pos_codes['below']))
-            isleft(first_shape_position) and edges.append((2, 0, self.pos_codes['left']))
-            isright(first_shape_position) and edges.append((2, 0, self.pos_codes['right']))
+            ishigh(first_shape_pos) and edges.append((1, 0, self.pos_codes['above']))
+            islow(first_shape_pos) and edges.append((1, 0, self.pos_codes['below']))
+            isleft(first_shape_pos) and edges.append((1, 0, self.pos_codes['left']))
+            isright(first_shape_pos) and edges.append((1, 0, self.pos_codes['right']))
 
-            ishigh(i) and edges.append((1, 0, self.pos_codes['above']))
-            islow(i) and edges.append((1, 0, self.pos_codes['below']))
-            isleft(i) and edges.append((1, 0, self.pos_codes['left']))
-            isright(i) and edges.append((1, 0, self.pos_codes['right']))
+            ishigh(i) and edges.append((2, 0, self.pos_codes['above']))
+            islow(i) and edges.append((2, 0, self.pos_codes['below']))
+            isleft(i) and edges.append((2, 0, self.pos_codes['left']))
+            isright(i) and edges.append((2, 0, self.pos_codes['right']))
             
 
         x = torch.tensor(nodes, dtype=torch.float32).reshape([-1, 1])

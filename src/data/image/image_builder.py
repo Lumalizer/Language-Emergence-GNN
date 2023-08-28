@@ -52,14 +52,20 @@ class ImageBuilder(DatastringBuilder):
 
         self.assure_images()
 
-        def process_image(filename): return torch.flatten(read_image(
-            filename, mode=ImageReadMode.GRAY)/255, start_dim=1).squeeze()
+        def process_image(filename): 
+            return read_image(filename, mode=ImageReadMode.RGB)/255
 
         if not os.path.isfile(f'../assets/embedded_data/image_embeddings{self.embedding_size}.npy'):
-            imagedata = torch.stack([process_image(f"../assets/output/{filename}.png") for filename in self.datastrings])
+            embeddings = np.ndarray((0, self.embedding_size))
+            batch_size = 256
 
-            data = self.get_embeddings(imagedata)
-            data = data.reshape([-1, self.embedding_size])
+            for i in range(0, len(self.datastrings), batch_size):
+                batch_filenames = self.datastrings[i:i+batch_size]
+                batch_images = torch.stack([process_image(f"../assets/output/{filename}.png") for filename in batch_filenames])
+                data = self.get_embeddings(batch_images)
+                embeddings = np.append(embeddings, data, axis=0)
 
-            np.save(f'../assets/embedded_data/image_embeddings{self.embedding_size}.npy', data)
+            embeddings = embeddings.reshape([-1, self.embedding_size])
+
+            np.save(f'../assets/embedded_data/image_embeddings{self.embedding_size}.npy', embeddings)
             np.save(f'../assets/embedded_data/image_embeddings{self.embedding_size}_labels.npy', np.array(self.datastrings))

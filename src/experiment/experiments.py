@@ -15,13 +15,15 @@ def run_experiment(options: ExperimentOptions, target_folder: str):
     assure_dataset(options)
     print(f"Running {options}")
     target_labels = []
-    messages = []
 
     train_loader, valid_loader = get_dataloaders(options, target_labels)
-    game = get_game(options, messages)
-    results = perform_training(options, train_loader, valid_loader, game)
+    game = get_game(options)
+    results, model = perform_training(options, train_loader, valid_loader, game)
 
-    store_vocab_info(options, target_labels, messages, target_folder)
+    target_labels.clear() # only take eval labels
+    loss, interaction = model.eval(valid_loader)
+
+    store_vocab_info(options, target_labels, interaction.message.tolist(), interaction.aux['acc'].tolist(), target_folder)
     return results_to_dataframe(results, options, target_folder)
 
 
@@ -56,4 +58,4 @@ def run_series_experiments(experiments: list[ExperimentOptions], name: str, n_re
         logging.info(f"Running experiment {i+1}/{len(experiments)}")
         results = pd.concat((results, run_both_experiments(options, target_folder, n_repetitions)))
     results.to_csv(f"{target_folder}/results.csv")
-    return results
+    return results, target_folder
