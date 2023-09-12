@@ -5,6 +5,7 @@ from data.split_labels import split_data_labels
 from options import ExperimentOptions
 from torch.utils.data import DataLoader
 from analysis.timer import timer
+from typing import Union
 
 
 def get_dataloaders(options: ExperimentOptions, target_label_collector=None):
@@ -33,8 +34,8 @@ def get_graph_dataloaders(options: ExperimentOptions, train_labels, valid_labels
 
 
 class ExtendedDataLoader(DataLoader):
-    def __init__(self, dataset: ShapesPosImgDataset | ShapesPosGraphDataset, data_target, options: ExperimentOptions, target_label_collector):
-        self.dataset: ShapesPosImgDataset | ShapesPosGraphDataset = dataset
+    def __init__(self, dataset: Union[ShapesPosImgDataset, ShapesPosGraphDataset], data_target, options: ExperimentOptions, target_label_collector):
+        self.dataset = dataset
         super().__init__(dataset, batch_size=options.batch_size, shuffle=False, drop_last=True)
         self.options = options
         self.target_label_collector = target_label_collector
