@@ -19,10 +19,10 @@ class InformedSender(nn.Module):
     def forward(self, x, _aux_input=None):
         emb = self.return_embeddings(x)         # batch_size x 1 x game_size x embedding_size
         h = self.conv2(emb)                     # batch_size x hidden_size x 1 x embedding_size
-        h = torch.sigmoid(h)
+        h = torch.nn.LeakyReLU()(h)
         h = h.transpose(1, 2)                   # batch_size, 1, hidden_size, embedding_size
         h = self.conv3(h)                       # batch_size, 1, 1, embedding_size
-        h = torch.sigmoid(h)
+        h = torch.nn.LeakyReLU()(h)
         h = h.squeeze()                         # batch_size x embedding_size
         h = self.lin4(h)                        # batch_size x hidden_size
         h = h.mul(1.0 / self.temp)

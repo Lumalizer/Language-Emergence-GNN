@@ -27,15 +27,7 @@ def get_game(options: ExperimentOptions):
         options.embedding_size,
         options.hidden_size)
 
-    sender = core.RnnSenderReinforce(sender, options.vocab_size, options.embedding_size,
-                                     options.hidden_size, max_len=options.max_len, cell=options.sender_cell)
-    receiver = core.RnnReceiverDeterministic(receiver, options.vocab_size, options.embedding_size,
-                                             options.hidden_size)
-    game = core.SenderReceiverRnnReinforce(
-        sender,
-        receiver,
-        loss_nll,
-        sender_entropy_coeff=0.01,
-        receiver_entropy_coeff=0.01,
-    )
+    sender = core.RnnSenderGS(sender, options.vocab_size, options.embedding_size, options.hidden_size, max_len=options.max_len, temperature=1.0, cell=options.sender_cell)
+    receiver = core.RnnReceiverGS(receiver, options.vocab_size, options.embedding_size, options.hidden_size, cell=options.sender_cell)
+    game = core.SenderReceiverRnnGS(sender, receiver, loss_nll)
     return game
