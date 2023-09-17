@@ -27,40 +27,29 @@ class GraphBuilder(DatastringBuilder):
 
         graphstring = graphstring.replace('.png', '')
         nodes = [0]
-        first_shape_pos = None
-        edges = []
+        edge_attr = []
+
+        ishigh = lambda x: x in [0, 1]
+        islow = lambda x: x in [2, 3]
+        isleft = lambda x: x in [0, 2]
+        isright = lambda x: x in [1, 3]
 
         graphelements = graphstring.split('_')
 
         for i, shape in enumerate(graphelements):
             if shape == '0':
                 continue
-
+            
             nodes.append(self.shapes_codes[shape])
             
-            if len(nodes) == 2:
-                first_shape_pos = i
-                continue
-
-            ishigh = lambda x: x in [0, 1]
-            islow = lambda x: x in [2, 3]
-            isleft = lambda x: x in [0, 2]
-            isright = lambda x: x in [1, 3]
-
-            ishigh(first_shape_pos) and edges.append((1, 0, self.pos_codes['above']))
-            islow(first_shape_pos) and edges.append((1, 0, self.pos_codes['below']))
-            isleft(first_shape_pos) and edges.append((1, 0, self.pos_codes['left']))
-            isright(first_shape_pos) and edges.append((1, 0, self.pos_codes['right']))
-
-            ishigh(i) and edges.append((2, 0, self.pos_codes['above']))
-            islow(i) and edges.append((2, 0, self.pos_codes['below']))
-            isleft(i) and edges.append((2, 0, self.pos_codes['left']))
-            isright(i) and edges.append((2, 0, self.pos_codes['right']))
-            
+            ishigh(i) and edge_attr.append(self.pos_codes['above'])
+            islow(i) and edge_attr.append(self.pos_codes['below'])
+            isleft(i) and edge_attr.append(self.pos_codes['left'])
+            isright(i) and edge_attr.append(self.pos_codes['right'])
 
         x = torch.tensor(nodes, dtype=torch.float32).reshape([-1, 1])
-        edge_index = torch.tensor([tuple(edge[:2]) for edge in edges], dtype=torch.int64).t().contiguous()
-        edge_attr = torch.tensor([edge[2] for edge in edges])
+        edge_index = torch.tensor([[1, 1, 2, 2], [0, 0, 0, 0]], dtype=torch.long)
+        edge_attr = torch.tensor(edge_attr, dtype=torch.float)
 
         data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
         return data
