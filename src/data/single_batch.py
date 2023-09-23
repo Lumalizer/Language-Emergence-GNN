@@ -5,7 +5,7 @@ import random
 
 
 class SingleBatch:
-    def __init__(self, dataloader, target_data, options: ExperimentOptions, target_label_collector=None):
+    def __init__(self, dataloader, target_data, options: ExperimentOptions, collect_labels=None):
         self.options = options
         self.randomizer = np.random.RandomState(42)
         self.batch_idx = 0
@@ -15,7 +15,7 @@ class SingleBatch:
         self.labels = dataloader.dataset.labels
 
         # self.position_groups = self.get_position_groups()
-        self.target_label_collector = target_label_collector
+        self.collect_labels = collect_labels
 
     def __iter__(self):
         return self
@@ -70,8 +70,10 @@ class SingleBatch:
             data_indexes_receiver[j] = data_indexes_sender[j, permute]
             y[j] = permute.argmin()
 
-            target_index = data_indexes_receiver[j, y[j]]
-            self.target_label_collector is not None and self.target_label_collector.append(self.labels[target_index])
+            target_label = self.labels[data_indexes_receiver[j, y[j]]]
+            distractor_labels = [self.labels[l] for l in np.delete(data_indexes_receiver[j], y[j])]
+
+            self.collect_labels is not None and self.collect_labels(target_label, distractor_labels)
 
         # vectors are batch_size x game_size x embedding_size
         return data_vectors_sender, y, data_vectors_receiver

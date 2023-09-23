@@ -13,6 +13,6 @@ coloredlogs.install(level='INFO')
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 results, target_folder = run_series_experiments(experiments, 'graphvsimage', n_repetitions=1)
-#results = pd.read_csv('../results/2023_23_06_02_30_093graphvsimage/results.csv')
+#results = pd.read_csv('../results/2023_17_09_23_04_54graphvsimage/results.csv')
 
-plot_dataframe(results, "Test", mode="test", facet_col='max_len', facet_row='game_size', save_target=target_folder)
+plot_dataframe(results, "Graph vs Image representations, max_len=4, vocab_size=7", mode="both", facet_col='mode', facet_row='game_size')

@@ -7,6 +7,9 @@ from options import ExperimentOptions
 
 
 def get_experiment_means(results: list[pd.DataFrame]):
+    if not results:
+        return pd.DataFrame()
+    
     to_mean = ['acc', 'loss', 'baseline', 'sender_entropy', 'receiver_entropy']
     r = results[0]
     for element in to_mean:
@@ -19,7 +22,7 @@ def get_experiment_means(results: list[pd.DataFrame]):
     return r
 
 
-def results_to_dataframe(results: str, options: ExperimentOptions, folder: str, save: bool = True) -> pd.DataFrame:
+def results_to_dataframe(results: str, interaction_results: pd.DataFrame(), options: ExperimentOptions, folder: str, save: bool = True) -> pd.DataFrame:
     initial = pd.DataFrame({'experiment': options.experiment, 'mode': 'train', 'epoch': [0], 'acc': [1/options.game_size]})
     initial = pd.concat((initial, pd.DataFrame({'experiment': options.experiment, 'mode': 'test', 'epoch': [0], 'acc': [1/options.game_size]})))
     results = pd.concat((initial, pd.DataFrame([json.loads(line) for line in results.split('\n') if line])))
@@ -34,8 +37,11 @@ def results_to_dataframe(results: str, options: ExperimentOptions, folder: str, 
     results['max_len'] = int(options.max_len)
     results['sender_cell'] = str(options.sender_cell)
     results['id'] = str(uuid.uuid4())
-    os.makedirs(f'{folder}/small', exist_ok=True)
-    save and results.to_csv(f'{folder}/small/{str(options)}.csv')
+    os.makedirs(f'{folder}/experiments', exist_ok=True)
+    save and results.to_csv(f'{folder}/experiments/{str(options)}.csv')
+
+    with open(f'{folder}/{"vocab" + str(options)}.json', 'w') as f:
+        interaction_results.to_json(f)
     return results
 
 

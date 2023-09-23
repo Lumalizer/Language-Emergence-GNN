@@ -12,13 +12,13 @@ class ExperimentOptions:
     vocab_size: int = 20
 
     embedding_size: int = 30
-    hidden_size: int = 60
+    hidden_size: int = 120
     tau_s: float = 1.0
     sender_cell: str = 'gru'  # 'rnn', 'gru', or 'lstm'
 
     batch_size: int = 64
-    batches_per_epoch: int = 16
-    n_epochs: int = 300
+    batches_per_epoch: int = 256
+    n_epochs: int = 40
 
     feat_size: int = 30
     n_separated_shapes: int = 8
@@ -57,4 +57,4 @@ class ExperimentOptions:
             raise ValueError(f"n_unseen_shapes_per_test_element must be 0, 1 or 2, got {self.n_unseen_shapes}")
 
     def __str__(self):
-        return f"{self.timestamp}_{self.experiment}_maxlen_{self.max_len}_cell{self.sender_cell}_game{self.game_size}_vocab{self.vocab_size}_hidden{self.hidden_size}_unseen{self.n_unseen_shapes}_epochs{self.n_epochs}"
+        return f"{self.timestamp}_{self.experiment}_maxlen_{self.max_len}_vocab{self.vocab_size}_game{self.game_size}"

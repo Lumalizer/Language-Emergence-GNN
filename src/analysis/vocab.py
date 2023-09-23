@@ -8,8 +8,8 @@ import plotly.graph_objs as go
 import plotly.express as px
 
 
-def store_vocab_info(options, target_labels, messages, accuracies, target_folder):
-    df = pd.DataFrame({'target': target_labels, 'message': messages, 'accuracy': accuracies})
+def store_vocab_info(options, target_labels, distractor_labels, messages, accuracies, target_folder):
+    df = pd.DataFrame({'target': target_labels, 'distractors': distractor_labels, 'message': messages, 'accuracy': accuracies})
     with open(f'{target_folder}/{"vocab" + str(options)}.json', 'w') as f:
         df.to_json(f)
 
@@ -110,7 +110,7 @@ def analyze_relative_word_frequencies(df: pd.DataFrame, tokenizer, filter_functi
 
 
 if __name__ == '__main__':
-    df = read_vocab("important\\vocab2023_08_09_19_27_21___graph_maxlen_4_cellgru_game5_vocab20_hidden120_unseen1_epochs400")
+    df = read_vocab("important\\vocab2023_17_09_23_09_05___graph_maxlen_4_cellgru_game5_vocab7_hidden120_unseen1_epochs40")
     tokenizer = get_tokenizer(n=1)
     tokenized_sentences = tokenizer(df['message'].tolist())
     model = Word2Vec(tokenized_sentences, vector_size=100, window=5, min_count=1, sg=1, epochs=20)
@@ -118,5 +118,5 @@ if __name__ == '__main__':
     word_frequencies = get_word_frequencies(tokenized_sentences)
     visualize_word_embeddings(model)
     average_similarity(model)
-    # analyze_relative_word_frequencies(df, tokenizer, lambda df: df['target'].apply(lambda x: 'bunny' in x))
+    analyze_relative_word_frequencies(df, tokenizer, lambda df: df['target'].apply(lambda x: 'bunny' in x))
     analyze_relative_word_frequencies(df, tokenizer, lambda df: df['accuracy'].apply(lambda x: x != 1.0))
