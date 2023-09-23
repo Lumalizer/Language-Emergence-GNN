@@ -15,7 +15,6 @@ def get_game(options: ExperimentOptions):
 
     sender = InformedSender(
         options.game_size,
-        options.feat_size,
         options.embedding_size,
         options.hidden_size,
         options.vocab_size,
@@ -23,7 +22,6 @@ def get_game(options: ExperimentOptions):
 
     receiver = Receiver(
         options.game_size,
-        options.feat_size,
         options.embedding_size,
         options.hidden_size)
 

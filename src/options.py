@@ -20,7 +20,6 @@ class ExperimentOptions:
     batches_per_epoch: int = 256
     n_epochs: int = 40
 
-    feat_size: int = 30
     n_separated_shapes: int = 8
     n_unseen_shapes: int = 1
 
@@ -49,9 +48,6 @@ class ExperimentOptions:
         if self.embedding_size % 3 != 0:
             self.embedding_size = self.embedding_size + (3 - self.embedding_size % 3)
             logging.warning(f"embedding_size must be a multiple of 3, setting to {self.embedding_size}")
-
-        if self.preembedded_data and self.feat_size != self.embedding_size:
-            self.feat_size = self.embedding_size
 
         if not 0 <= self.n_unseen_shapes <= 2:
             raise ValueError(f"n_unseen_shapes_per_test_element must be 0, 1 or 2, got {self.n_unseen_shapes}")
