@@ -8,9 +8,15 @@ from experiment.train import perform_training
 import pandas as pd
 from datetime import datetime
 
-def evalute_model(model, options, target_labels, distractor_labels, valid_loader, target_folder):
-    target_labels.clear()       # remove previous eval labels
-    distractor_labels.clear()
+def evalute_model(model, options, valid_loader, target_folder):
+    target_labels = []
+    distractor_labels = []
+
+    def collect_labels(target: str, distractors: list[str]):
+        target_labels.append(target)
+        distractor_labels.append(distractors) 
+
+    valid_loader.collect_labels = collect_labels
     loss, interaction = model.eval(valid_loader)
 
     vocab = {i: i for i in range(options.vocab_size)}
@@ -27,11 +33,11 @@ def run_experiment(options: ExperimentOptions, target_folder: str):
     assure_dataset(options)
     print(f"Running {options}")
 
-    train_loader, valid_loader, target_labels, distractor_labels = get_dataloaders(options)
+    train_loader, valid_loader = get_dataloaders(options)
     game = get_game(options)
     results, model = perform_training(options, train_loader, valid_loader, game)
 
-    interaction_results = evalute_model(model, options, target_labels, distractor_labels, valid_loader, target_folder)
+    interaction_results = evalute_model(model, options, valid_loader, target_folder)
 
     return results_to_dataframe(results, interaction_results, options, target_folder)
 

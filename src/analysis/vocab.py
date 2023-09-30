@@ -8,12 +8,6 @@ import plotly.graph_objs as go
 import plotly.express as px
 
 
-def store_vocab_info(options, target_labels, distractor_labels, messages, accuracies, target_folder):
-    df = pd.DataFrame({'target': target_labels, 'distractors': distractor_labels, 'message': messages, 'accuracy': accuracies})
-    with open(f'{target_folder}/{"vocab" + str(options)}.json', 'w') as f:
-        df.to_json(f)
-
-
 def read_vocab(filename):
     path = os.path.join(os.getcwd(), "results\\", filename + ".json")
     return pd.read_json(path)
@@ -109,14 +103,66 @@ def analyze_relative_word_frequencies(df: pd.DataFrame, tokenizer, filter_functi
     fig.show()
 
 
+def has_challenge(target, distractors):
+    target = target.split('_')
+    distractors = [d.split('_') for d in distractors]
+
+    similar_positions = [sum(t == d == '0' for t, d in zip(target, distractor)) > 1 for distractor in distractors]
+    similar_shapes = [sum(t == d != '0' for t, d in zip(target, distractor)) > 1 for distractor in distractors]
+    return sum(similar_positions) > 0, sum(similar_shapes) > 0
+
+
+def error_analysis(df: pd.DataFrame):
+    associations = df.groupby('target')['message'].apply(lambda x: set(str(msg) for msg in x)).to_dict()
+    # columns = ['target', 'distractors', 'message', 'accuracy']
+    df['has_similar_positions'], df['has_similar_shapes'] = zip(*df.apply(lambda row: has_challenge(row['target'], row['distractors']), axis=1))
+
+    errors = df[df['accuracy'] != 1.0]
+    successes = df[df['accuracy'] == 1.0]
+    
+    print(df.head())
+    print(f"Total amount of targets in df: {len(df['target'].unique())}")
+    print(f"Mean number of messages per target: {sum(len(v) for v in associations.values()) / len(associations)}")
+    print(f"Total amount of unique messages in df: {len(df['message'].apply(lambda x: str(x)).unique())}")
+    print(f"Total amount of unique messages in errors: {len(errors['message'].apply(lambda x: str(x)).unique())}")
+    print(f"Total number of errors: {len(errors)}")
+    print(f"Total number of successes: {len(successes)}")
+    print(f"Number of same positions: {len(df[df['has_similar_positions']])}")
+    print(f"Number of same shapes: {len(df[df['has_similar_shapes']])}")
+    print(f"Number of errors with similar positions: {len(errors[errors['has_similar_positions']])}")
+    print(f"Number of errors with similar shapes: {len(errors[errors['has_similar_shapes']])}")
+    print(f"Number of successes with similar positions: {len(successes[successes['has_similar_positions']])}")
+    print(f"Number of successes with similar shapes: {len(successes[successes['has_similar_shapes']])}")
+    print(f"Number of errors with similar positions and shapes: {len(errors[(errors['has_similar_positions']) & (errors['has_similar_shapes'])])}")
+    print(f"Number of successes with similar positions and shapes: {len(successes[(successes['has_similar_positions']) & (successes['has_similar_shapes'])])}")
+
+    try:
+        print(f"Ratio of errors with similar positions compared to number of similar positions in df (should be close to 1): \
+              {len(errors[errors['has_similar_positions']]) * len(successes) / len(errors) / len(successes[successes['has_similar_positions']])}")
+        print(f"Ratio of errors with similar shapes compared to number of similar shapes in df (should be close to 1): \
+              {len(errors[errors['has_similar_shapes']]) * len(successes) / len(errors) / len(successes[successes['has_similar_shapes']])}")
+    except ZeroDivisionError:
+        pass
+
+    return df
+
+def show_error_targets(df: pd.DataFrame):
+    errors = df[df['accuracy'] != 1.0]
+    error_targets = errors['target'].tolist()
+    error_targets = [t.split('_') for t in error_targets]
+    error_targets = [item for sublist in error_targets for item in sublist if item != '0']
+    fig = px.histogram(x=error_targets, title="Error Analysis", labels={'x': 'Word', 'y': 'Frequency'}, color=error_targets)
+    fig.show()
+
 if __name__ == '__main__':
-    df = read_vocab("important\\vocab2023_17_09_23_09_05___graph_maxlen_4_cellgru_game5_vocab7_hidden120_unseen1_epochs40")
+    df = read_vocab("important\\vocab2023_30_09_13_33_31___graph_maxlen_3_vocab60_game5")
     tokenizer = get_tokenizer(n=1)
     tokenized_sentences = tokenizer(df['message'].tolist())
     model = Word2Vec(tokenized_sentences, vector_size=100, window=5, min_count=1, sg=1, epochs=20)
 
-    word_frequencies = get_word_frequencies(tokenized_sentences)
-    visualize_word_embeddings(model)
-    average_similarity(model)
-    analyze_relative_word_frequencies(df, tokenizer, lambda df: df['target'].apply(lambda x: 'bunny' in x))
-    analyze_relative_word_frequencies(df, tokenizer, lambda df: df['accuracy'].apply(lambda x: x != 1.0))
+    # word_frequencies = get_word_frequencies(tokenized_sentences)
+    # visualize_word_embeddings(model)
+    # average_similarity(model)
+    # analyze_relative_word_frequencies(df, tokenizer, lambda df: df['target'].apply(lambda x: 'bunny' in x))
+    # analyze_relative_word_frequencies(df, tokenizer, lambda df: df['accuracy'].apply(lambda x: x != 1.0))
+    error_analysis(df)

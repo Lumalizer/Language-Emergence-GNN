@@ -6,46 +6,35 @@ from options import ExperimentOptions
 from torch.utils.data import DataLoader
 from analysis.timer import timer
 from typing import Union
+import torch
 
 
+@timer
 def get_dataloaders(options: ExperimentOptions):
     train_labels, valid_labels = split_data_labels(options)
-    target_labels = []
-    distractor_labels = []
-
-    def collect_labels(target: str, distractors: list[str]):
-        target_labels.append(target)
-        distractor_labels.append(distractors) 
 
     if options.experiment == 'image':
-        return *get_image_dataloaders(options, train_labels, valid_labels, collect_labels), target_labels, distractor_labels
+        dataset_class = ShapesPosImgDataset
+        data_attr = 'images'
     elif options.experiment == 'graph':
-        return *get_graph_dataloaders(options, train_labels, valid_labels, collect_labels), target_labels, distractor_labels
+        dataset_class = ShapesPosGraphDataset
+        data_attr = 'graphs'
     else:
         raise ValueError(f'Unknown experiment type: {options.experiment}. Possible values: image, graph')
 
+    train_data = dataset_class(train_labels, options)
+    valid_data = dataset_class(valid_labels, options)
+    train_loader = ExtendedDataLoader(train_data, getattr(train_data, data_attr), options)
+    valid_loader = ExtendedDataLoader(valid_data, getattr(valid_data, data_attr), options)
 
-@timer
-def get_image_dataloaders(options: ExperimentOptions, train_labels, valid_labels, collect_labels):
-    train_data = ShapesPosImgDataset(train_labels, options)
-    valid_data = ShapesPosImgDataset(valid_labels, options)
-    return ExtendedDataLoader(train_data, train_data.images, options), ExtendedDataLoader(valid_data, valid_data.images, options, collect_labels)
-
-
-@timer
-def get_graph_dataloaders(options: ExperimentOptions, train_labels, valid_labels, collect_labels):
-    train_data = ShapesPosGraphDataset(train_labels, options)
-    valid_data = ShapesPosGraphDataset(valid_labels, options)
-    return ExtendedDataLoader(train_data, train_data, options), ExtendedDataLoader(valid_data, valid_data, options, collect_labels)
+    return train_loader, valid_loader
 
 
 class ExtendedDataLoader(DataLoader):
-    def __init__(self, dataset: Union[ShapesPosImgDataset, ShapesPosGraphDataset], data_target, options: ExperimentOptions, collect_labels=None):
-        self.dataset = dataset
+    def __init__(self, dataset: Union[ShapesPosImgDataset, ShapesPosGraphDataset], data_target: torch.Tensor, options: ExperimentOptions, collect_labels=None):
         super().__init__(dataset, batch_size=options.batch_size, shuffle=False, drop_last=True)
         self.options = options
         self.collect_labels = collect_labels
-        # data_target makes it possible to use the same class for regular pytorch and pytorch_geomtric data
         self.data_target = data_target
 
     def __iter__(self):

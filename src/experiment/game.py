@@ -25,7 +25,7 @@ def get_game(options: ExperimentOptions):
         options.embedding_size,
         options.hidden_size)
 
-    sender = core.RnnSenderGS(sender, options.vocab_size, options.embedding_size, options.hidden_size, max_len=options.max_len, temperature=1.0, cell=options.sender_cell)
+    sender = core.RnnSenderGS(sender, options.vocab_size, options.embedding_size, options.hidden_size, max_len=options.max_len, temperature=1.0, cell=options.sender_cell, trainable_temperature=True)
     receiver = core.RnnReceiverGS(receiver, options.vocab_size, options.embedding_size, options.hidden_size, cell=options.sender_cell)
-    game = core.SenderReceiverRnnGS(sender, receiver, loss_nll)
+    game = core.SenderReceiverRnnGS(sender, receiver, loss_nll, length_cost=options.length_cost)
     return game

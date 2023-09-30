@@ -1,13 +1,14 @@
 import numpy as np
 from torch_geometric.data import Dataset
 from options import ExperimentOptions
+import torch
 
 
 class ShapesPosGraphDataset(Dataset):
     def __init__(self, labels: list[str], options: ExperimentOptions):
         all_labels = np.load(f'../assets/embedded_data/graph_embeddings{options.embedding_size}_labels.npy')
         mask = np.isin(all_labels, labels)
-        self.graphs = np.load(f'../assets/embedded_data/graph_embeddings{options.embedding_size}.npy')[mask].tolist()
+        self.graphs = torch.tensor(np.load(f'../assets/embedded_data/graph_embeddings{options.embedding_size}.npy')[mask])
         self.labels = labels
         super().__init__(self.graphs)
 

@@ -12,20 +12,21 @@ class ExperimentOptions:
     vocab_size: int = 20
 
     embedding_size: int = 30
-    hidden_size: int = 120
-    tau_s: float = 1.0
+    hidden_size: int = 80
+    
     sender_cell: str = 'gru'  # 'rnn', 'gru', or 'lstm'
+    length_cost: float = 0.0
+    tau_s: float = 1.0
 
     batch_size: int = 64
     batches_per_epoch: int = 256
-    n_epochs: int = 40
+    n_epochs: int = 80
 
     n_separated_shapes: int = 8
-    n_unseen_shapes: int = 1
+    n_unseen_shapes: int = 0
 
     dataset_location: str = '../assets/output'
     show_plot: bool = False
-    preembedded_data: bool = True
     print_to_console: bool = True
     add_shape_only_games: bool = False
 
