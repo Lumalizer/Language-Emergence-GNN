@@ -8,7 +8,7 @@ from experiment.train import perform_training
 import pandas as pd
 from datetime import datetime
 
-def evalute_model(model, options, valid_loader, target_folder):
+def evalute_model(model, options, valid_loader):
     target_labels = []
     distractor_labels = []
 
@@ -37,7 +37,7 @@ def run_experiment(options: ExperimentOptions, target_folder: str):
     game = get_game(options)
     results, model = perform_training(options, train_loader, valid_loader, game)
 
-    interaction_results = evalute_model(model, options, valid_loader, target_folder)
+    interaction_results = evalute_model(model, options, valid_loader)
 
     return results_to_dataframe(results, interaction_results, options, target_folder)
 

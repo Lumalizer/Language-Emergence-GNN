@@ -1,12 +1,15 @@
+import tqdm
 import json
 from egg.core.callbacks import ConsoleLogger
+from options import ExperimentOptions
 
 
 class ResultsCollector(ConsoleLogger):
-    def __init__(self, results: list, print_to_console: bool, print_train_loss=True, as_json=True):
-        super().__init__(as_json=as_json, print_train_loss=print_train_loss)
+    def __init__(self, results: list, options: ExperimentOptions):
+        super().__init__(True, True)
         self.results = results
-        self.print_to_console = print_to_console
+        self.options = options
+        self.progress_bar = tqdm.tqdm(total=options.n_epochs)
 
     # adapted from egg.core.callbacks.ConsoleLogger
     def aggregate_print(self, loss: float, logs, mode: str, epoch: int):
@@ -18,7 +21,12 @@ class ResultsCollector(ConsoleLogger):
         results = json.dumps(dump)
         self.results.append(results)
 
-        if self.print_to_console:
-            output_message = ", ".join(sorted([f"{k}={v}" for k, v in dump.items()]))
-            output_message = f"{mode}: epoch {epoch}, loss {loss}, " + output_message
-            print(output_message)
+        if self.options.print_to_console:
+            if mode == "train":
+                self.progress_bar.update(1)
+            else:
+                mode = " test"
+
+            output_message = ", ".join(sorted([f"{k}={round(v, 5) if isinstance(v, float) else v}" for k, v in dump.items() if k != "mode"]))
+            output_message = f"mode={mode}: " + output_message
+            self.progress_bar.set_description(output_message, refresh=True)

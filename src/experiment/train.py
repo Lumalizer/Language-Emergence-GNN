@@ -13,7 +13,7 @@ def perform_training(options: ExperimentOptions, train_loader, valid_loader, gam
         optimizer=core.build_optimizer(game.parameters()),
         train_data=train_loader,
         validation_data=valid_loader,
-        callbacks=[ResultsCollector(results, print_to_console=options.print_to_console)],
+        callbacks=[ResultsCollector(results, options)],
     )
 
     trainer.train(n_epochs=options.n_epochs)

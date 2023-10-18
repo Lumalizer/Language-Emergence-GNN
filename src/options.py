@@ -13,7 +13,7 @@ class ExperimentOptions:
 
     embedding_size: int = 30
     hidden_size: int = 80
-    
+
     sender_cell: str = 'gru'  # 'rnn', 'gru', or 'lstm'
     length_cost: float = 0.0
     tau_s: float = 1.0
@@ -26,9 +26,8 @@ class ExperimentOptions:
     n_unseen_shapes: int = 0
 
     dataset_location: str = '../assets/output'
-    show_plot: bool = False
     print_to_console: bool = True
-    add_shape_only_games: bool = False
+    use_mixed_distractors: bool = True
 
     @classmethod
     def from_dict(cls, d: dict):

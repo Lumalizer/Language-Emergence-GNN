@@ -4,12 +4,13 @@ import uuid
 import pandas as pd
 import statistics
 from options import ExperimentOptions
+from analysis.vocab import vocab_error_analysis
 
 
 def get_experiment_means(results: list[pd.DataFrame]):
     if not results:
         return pd.DataFrame()
-    
+
     to_mean = ['acc', 'loss', 'baseline', 'sender_entropy', 'receiver_entropy']
     r = results[0]
     for element in to_mean:
@@ -40,14 +41,12 @@ def results_to_dataframe(results: str, interaction_results: pd.DataFrame(), opti
     os.makedirs(f'{folder}/experiments', exist_ok=True)
     save and results.to_csv(f'{folder}/experiments/{str(options)}.csv')
 
-    with open(f'{folder}/{"vocab" + str(options)}.json', 'w') as f:
+    with open(f'{folder}/experiments/{"vocab_" + str(options)}.json', 'w') as f:
         interaction_results.to_json(f)
+
+    with open(f'{folder}/experiments/{"vocab_info_" + str(options)}.txt', 'w') as f:
+        error_analyis = vocab_error_analysis(interaction_results)
+        options.print_to_console and print(error_analyis)
+        f.write(error_analyis)
+
     return results
-
-
-def get_final_accuracies(filename: str):
-    filename = os.path.abspath(filename)
-    df = pd.read_csv(filename)
-    mask = df['epoch'] == 300
-    df = df[mask]
-    return df[['experiment', 'mode', 'acc', 'max_len', 'game_size']].reset_index(drop=True)

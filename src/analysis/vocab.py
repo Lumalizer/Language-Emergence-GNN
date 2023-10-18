@@ -105,46 +105,39 @@ def analyze_relative_word_frequencies(df: pd.DataFrame, tokenizer, filter_functi
 
 def has_challenge(target, distractors):
     target = target.split('_')
-    distractors = [d.split('_') for d in distractors]
+    distractors_ = [d.split('_') for d in distractors]
+    same_positions = [sum(t == d == '0' for t, d in zip(target, distractor)) > 1 for distractor in distractors_]
 
-    similar_positions = [sum(t == d == '0' for t, d in zip(target, distractor)) > 1 for distractor in distractors]
-    similar_shapes = [sum(t == d != '0' for t, d in zip(target, distractor)) > 1 for distractor in distractors]
-    return sum(similar_positions) > 0, sum(similar_shapes) > 0
+    target = [t for t in target if t != '0']
+    same_shapes = [sorted(target) == sorted([d for d in distractor.split('_') if d != '0']) for distractor in distractors]
+    return sum(same_positions) > 0, sum(same_shapes) > 0
 
 
-def error_analysis(df: pd.DataFrame):
+def vocab_error_analysis(df: pd.DataFrame) -> str:
     associations = df.groupby('target')['message'].apply(lambda x: set(str(msg) for msg in x)).to_dict()
     # columns = ['target', 'distractors', 'message', 'accuracy']
-    df['has_similar_positions'], df['has_similar_shapes'] = zip(*df.apply(lambda row: has_challenge(row['target'], row['distractors']), axis=1))
-
+    df['has_same_positions'], df['has_same_shapes'] = zip(*df.apply(lambda row: has_challenge(row['target'], row['distractors']), axis=1))
     errors = df[df['accuracy'] != 1.0]
-    successes = df[df['accuracy'] == 1.0]
-    
-    print(df.head())
-    print(f"Total amount of targets in df: {len(df['target'].unique())}")
-    print(f"Mean number of messages per target: {sum(len(v) for v in associations.values()) / len(associations)}")
-    print(f"Total amount of unique messages in df: {len(df['message'].apply(lambda x: str(x)).unique())}")
-    print(f"Total amount of unique messages in errors: {len(errors['message'].apply(lambda x: str(x)).unique())}")
-    print(f"Total number of errors: {len(errors)}")
-    print(f"Total number of successes: {len(successes)}")
-    print(f"Number of same positions: {len(df[df['has_similar_positions']])}")
-    print(f"Number of same shapes: {len(df[df['has_similar_shapes']])}")
-    print(f"Number of errors with similar positions: {len(errors[errors['has_similar_positions']])}")
-    print(f"Number of errors with similar shapes: {len(errors[errors['has_similar_shapes']])}")
-    print(f"Number of successes with similar positions: {len(successes[successes['has_similar_positions']])}")
-    print(f"Number of successes with similar shapes: {len(successes[successes['has_similar_shapes']])}")
-    print(f"Number of errors with similar positions and shapes: {len(errors[(errors['has_similar_positions']) & (errors['has_similar_shapes'])])}")
-    print(f"Number of successes with similar positions and shapes: {len(successes[(successes['has_similar_positions']) & (successes['has_similar_shapes'])])}")
 
-    try:
-        print(f"Ratio of errors with similar positions compared to number of similar positions in df (should be close to 1): \
-              {len(errors[errors['has_similar_positions']]) * len(successes) / len(errors) / len(successes[successes['has_similar_positions']])}")
-        print(f"Ratio of errors with similar shapes compared to number of similar shapes in df (should be close to 1): \
-              {len(errors[errors['has_similar_shapes']]) * len(successes) / len(errors) / len(successes[successes['has_similar_shapes']])}")
-    except ZeroDivisionError:
-        pass
+    result = ""
+    result += f"{df.head(10)}\n\n"
+    result += f"Total games: {len(df)} (accuracy: {df['accuracy'].mean()*100:.2f}%)\n"
+    result += f"Mean messages per target: {sum(len(v) for v in associations.values()) / len(associations)} (unique targets: {len(df['target'].unique())})\n"
+    result += f"Total unique messages: {len(df['message'].apply(str).unique())}\n"
+    result += f"Total unique messages in errors: {len(errors['message'].apply(str).unique())}\n"
 
-    return df
+    has_same_position = df[df['has_same_positions'] & ~(df['has_same_shapes'])]
+    has_same_shape = df[df['has_same_shapes'] & ~(df['has_same_positions'])]
+    has_same_shapes_and_position = df[(df['has_same_positions']) & (df['has_same_shapes'])]
+    has_everything_different = df[~(df['has_same_positions']) & ~(df['has_same_shapes'])]
+
+    result += f"Same positions only: {len(has_same_position)} ({len(has_same_position) / len (df)*100:.2f}% of all games) ({has_same_position['accuracy'].mean()*100:.2f}% correct)\n"
+    result += f"Same shapes only: {len(has_same_shape)} ({len(has_same_shape) / len(df)*100:.2f}% of all games) ({has_same_shape['accuracy'].mean()*100:.2f}% correct)\n"
+    result += f"Same positions and shapes: {len(has_same_shapes_and_position)} ({len(has_same_shapes_and_position) / len(df)*100:.2f}% of all games) ({has_same_shapes_and_position['accuracy'].mean()*100:.2f}% correct)\n"
+    result += f"Everything different: {len(has_everything_different)} ({len(has_everything_different) / len(df)*100:.2f}% of all games) ({has_everything_different['accuracy'].mean()*100:.2f}% correct)\n"
+
+    return result
+
 
 def show_error_targets(df: pd.DataFrame):
     errors = df[df['accuracy'] != 1.0]
@@ -154,15 +147,15 @@ def show_error_targets(df: pd.DataFrame):
     fig = px.histogram(x=error_targets, title="Error Analysis", labels={'x': 'Word', 'y': 'Frequency'}, color=error_targets)
     fig.show()
 
-if __name__ == '__main__':
-    df = read_vocab("important\\vocab2023_30_09_13_33_31___graph_maxlen_3_vocab60_game5")
-    tokenizer = get_tokenizer(n=1)
-    tokenized_sentences = tokenizer(df['message'].tolist())
-    model = Word2Vec(tokenized_sentences, vector_size=100, window=5, min_count=1, sg=1, epochs=20)
 
+if __name__ == '__main__':
+    df = read_vocab("important\\vocab2023_17_10_16_45_15___graph_maxlen_3_vocab60_game5")
+    # tokenizer = get_tokenizer(n=1)
+    # tokenized_sentences = tokenizer(df['message'].tolist())
+    # model = Word2Vec(tokenized_sentences, vector_size=100, window=5, min_count=1, sg=1, epochs=20)
     # word_frequencies = get_word_frequencies(tokenized_sentences)
     # visualize_word_embeddings(model)
     # average_similarity(model)
     # analyze_relative_word_frequencies(df, tokenizer, lambda df: df['target'].apply(lambda x: 'bunny' in x))
     # analyze_relative_word_frequencies(df, tokenizer, lambda df: df['accuracy'].apply(lambda x: x != 1.0))
-    error_analysis(df)
+    print(vocab_error_analysis(df))
