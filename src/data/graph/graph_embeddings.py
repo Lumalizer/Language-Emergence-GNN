@@ -11,16 +11,15 @@ class GraphEmbeddings(torch.nn.Module):
 
         # we need to use some GNN that supports edge attributes
         # https://pytorch-geometric.readthedocs.io/en/latest/notes/cheatsheet.html
-        self.emb = GATv2Conv(num_node_features, embedding_size, edge_dim=2, heads=2, concat=True)
-        self.embedding_size = embedding_size
+        self.emb = GATv2Conv(
+            num_node_features, embedding_size//5, edge_dim=1)
 
     @torch.no_grad()
     def forward(self, data: Data) -> np.ndarray:
         node_features, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr
 
         # d is node_features x embedding_size (2d)
-        d = self.emb(x=node_features, edge_index=edge_index, edge_attr=edge_attr)
-        d = torch.nn.Linear(d.shape[1], self.embedding_size//3)(d)
+        d = self.emb(node_features, edge_index, edge_attr)
         # d is 1d
         d = d.flatten()
         # d is 1 x embedding_size
