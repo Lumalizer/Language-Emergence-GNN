@@ -6,7 +6,7 @@ from sklearn.decomposition import PCA
 from gensim.models import Word2Vec
 import plotly.graph_objs as go
 import plotly.express as px
-
+from pprint import pprint
 
 def read_vocab(filename):
     path = os.path.join(os.getcwd(), "results\\", filename + ".json")
@@ -110,14 +110,27 @@ def has_challenge(target, distractors):
 
     target = [t for t in target if t != '0']
     same_shapes = [sorted(target) == sorted([d for d in distractor.split('_') if d != '0']) for distractor in distractors]
-    return sum(same_positions) > 0, sum(same_shapes) > 0
+    equal_shapes = target[0] == target[1]
+    return sum(same_positions) > 0, sum(same_shapes) > 0, equal_shapes
 
 
 def vocab_error_analysis(df: pd.DataFrame) -> str:
     associations = df.groupby('target')['message'].apply(lambda x: set(str(msg) for msg in x)).to_dict()
     # columns = ['target', 'distractors', 'message', 'accuracy']
-    df['has_same_positions'], df['has_same_shapes'] = zip(*df.apply(lambda row: has_challenge(row['target'], row['distractors']), axis=1))
+    df['has_same_positions'], df['has_same_shapes'], df['has_equal_shapes'] = zip(*df.apply(lambda row: has_challenge(row['target'], row['distractors']), axis=1))
     errors = df[df['accuracy'] != 1.0]
+
+    equal = df[df['has_equal_shapes']]
+    print(equal.head(10))
+
+    # make a dict with message as key and count as value
+    messages = df['message'].apply(str).tolist()
+    message_counts = {s: messages.count(s) for s in set(messages)}
+
+    # # look at [45, 45, 45, 0]
+    # targets = df[df['message'].apply(str) == '[45, 45, 45, 0]']['target'].tolist()
+    # print(message_counts['[45, 45, 45, 0]'], len(targets))
+    # pprint(targets[:10])
 
     result = ""
     result += f"{df.head(10)}\n\n"
@@ -149,7 +162,8 @@ def show_error_targets(df: pd.DataFrame):
 
 
 if __name__ == '__main__':
-    df = read_vocab("important\\vocab2023_17_10_16_45_15___graph_maxlen_3_vocab60_game5")
+    df = read_vocab("important\\vocab_2023_21_11_18_42_19___graph_maxlen_3_vocab60_game30")
+    
     # tokenizer = get_tokenizer(n=1)
     # tokenized_sentences = tokenizer(df['message'].tolist())
     # model = Word2Vec(tokenized_sentences, vector_size=100, window=5, min_count=1, sg=1, epochs=20)
@@ -159,3 +173,5 @@ if __name__ == '__main__':
     # analyze_relative_word_frequencies(df, tokenizer, lambda df: df['target'].apply(lambda x: 'bunny' in x))
     # analyze_relative_word_frequencies(df, tokenizer, lambda df: df['accuracy'].apply(lambda x: x != 1.0))
     print(vocab_error_analysis(df))
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.max_colwidth', None, 'display.width', None):
+        print(df.head(100))

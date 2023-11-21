@@ -33,6 +33,7 @@ class ExtendedDataLoader(DataLoader):
         self.options = options
         self.collect_labels = collect_labels
         self.shape_names_dict, self.shape_names, self.shape_combinations = self.get_organized_shapes(dataset.labels)
+        self.position_names_dict, self.position_names, self.position_combinations = self.get_organize_positions(dataset.labels)
 
     @staticmethod
     def get_organized_shapes(labels):
@@ -52,6 +53,25 @@ class ExtendedDataLoader(DataLoader):
         shape_combinations = [k for k in shape_array_dict.keys() if "_" in k]
 
         return shape_array_dict, shape_names, shape_combinations
+    
+    @staticmethod
+    def get_organize_positions(labels):
+        position_names_dict = defaultdict(list)
+
+        for i, graphstring in enumerate(labels):
+            positions_empty = [j for j, g in enumerate(graphstring.split('_')) if g == '0']
+
+            for position in positions_empty:
+                position_names_dict[str(position)].append(i)
+
+            combined_positions = "_".join([str(n) for n in sorted(positions_empty)])
+            position_names_dict[combined_positions].append(i)
+
+        position_array_dict = {k: np.array(v) for k, v in position_names_dict.items() if len(v) > 2}
+        position_names = [k for k in position_array_dict.keys() if "_" not in k]
+        position_combinations = [k for k in position_array_dict.keys() if "_" in k]
+
+        return position_array_dict, position_names, position_combinations
 
     def __iter__(self):
         return SingleBatch(self)

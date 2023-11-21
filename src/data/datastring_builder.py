@@ -1,4 +1,4 @@
-from itertools import combinations, permutations, chain
+from itertools import combinations, combinations_with_replacement, permutations, chain
 from dataclasses import dataclass, field
 import os
 import random
@@ -17,7 +17,7 @@ class DatastringBuilder:
             os.mkdir('../assets/output')
 
     def get_shape_combinations(self):
-        return tuple(combinations(self.shapes, self.shapes_per_grid))
+        return tuple(combinations_with_replacement(self.shapes, self.shapes_per_grid))
 
     def get_grid_items(self, *shapes):
         zeroes = tuple(0 for _ in range(self.size**2 - len(shapes)))
