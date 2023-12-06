@@ -15,13 +15,16 @@ class InformedSender(nn.Module):
         self.conv2 = nn.Conv2d(1, 1, kernel_size=(hidden_size, 1), stride=(hidden_size, 1), bias=False)
         self.lin1 = nn.Linear(embedding_size, hidden_size, bias=False)
 
+        self.rl1 = torch.nn.LeakyReLU()
+        self.rl2 = torch.nn.LeakyReLU()
+
     def forward(self, x, _aux_input=None):
         emb = x.unsqueeze(dim=1)                # batch_size x 1 x game_size x embedding_size
         h = self.conv1(emb)                     # batch_size x hidden_size x 1 x embedding_size
-        h = torch.nn.LeakyReLU()(h)
+        h = self.rl1(h)
         h = h.transpose(1, 2)                   # batch_size, 1, hidden_size, embedding_size
         h = self.conv2(h)                       # batch_size, 1, 1, embedding_size
-        h = torch.nn.LeakyReLU()(h)
+        h = self.rl2(h)
         h = h.squeeze()                         # batch_size x embedding_size
         h = self.lin1(h)                        # batch_size x hidden_size
         h = h.mul(1.0 / self.temp)

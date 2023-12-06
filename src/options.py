@@ -27,7 +27,7 @@ class ExperimentOptions:
 
     dataset_location: str = '../assets/output'
     print_to_console: bool = True
-    use_mixed_distractors: bool = True
+    use_mixed_distractors: bool = False
 
     @classmethod
     def from_dict(cls, d: dict):

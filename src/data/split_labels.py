@@ -10,8 +10,8 @@ def split_data_labels(options: ExperimentOptions):
     labels = DatastringBuilder().datastrings
 
     if options.n_unseen_shapes == 0:
-        train_labels = labels[len(labels)//10:]
-        valid_labels = labels[:len(labels)//10]
+        train_labels = labels[len(labels)//4:]
+        valid_labels = labels[:len(labels)//4]
     else:
         shapes = [s.replace('.png', '') for s in os.listdir('../assets/shapes') if s.endswith('.png')]
         separated = sample(shapes, options.n_separated_shapes)
