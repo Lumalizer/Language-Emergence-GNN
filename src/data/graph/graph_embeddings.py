@@ -14,8 +14,7 @@ class GraphEmbeddings(torch.nn.Module):
         self.emb = GATv2Conv(
             num_node_features, embedding_size//5, edge_dim=1)
 
-    @torch.no_grad()
-    def forward(self, data: Data) -> np.ndarray:
+    def forward(self, data: Data, detach: bool) -> np.ndarray:
         node_features, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr
 
         # d is node_features x embedding_size (2d)
@@ -24,4 +23,8 @@ class GraphEmbeddings(torch.nn.Module):
         d = d.flatten()
         # d is 1 x embedding_size
         d: torch.Tensor = d.unsqueeze(0)
-        return d.detach().numpy()
+
+        if detach:
+            d = d.detach().numpy()
+
+        return d

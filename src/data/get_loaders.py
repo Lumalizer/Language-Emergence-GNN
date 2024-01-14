@@ -1,6 +1,8 @@
 from data.graph.graph_dataset import ShapesPosGraphDataset
 from data.image.image_dataset import ShapesPosImgDataset
 from data.single_batch import SingleBatch
+from data.graph.graph_builder import GraphBuilder
+from data.image.image_builder import ImageBuilder
 from data.split_labels import split_data_labels
 from options import ExperimentOptions
 from torch.utils.data import DataLoader
@@ -12,19 +14,23 @@ from collections import defaultdict
 
 @timer
 def get_dataloaders(options: ExperimentOptions):
-    train_labels, valid_labels = split_data_labels(options)
+    train_labels, valid_labels, label_codes = split_data_labels(options)
 
     if options.experiment == 'image':
         dataset_class = ShapesPosImgDataset
+        if options.use_prebuilt_embeddings:
+                ImageBuilder(embedding_size=options.embedding_size).produce_dataset()
     elif options.experiment == 'graph':
         dataset_class = ShapesPosGraphDataset
+        if options.use_prebuilt_embeddings:
+                GraphBuilder(embedding_size=options.embedding_size).produce_dataset()
     else:
         raise ValueError(f'Unknown experiment type: {options.experiment}. Possible values: image, graph')
 
     train_loader = ExtendedDataLoader(dataset_class(train_labels, options), options)
     valid_loader = ExtendedDataLoader(dataset_class(valid_labels, options), options)
 
-    return train_loader, valid_loader
+    return train_loader, valid_loader, label_codes
 
 
 class ExtendedDataLoader(DataLoader):

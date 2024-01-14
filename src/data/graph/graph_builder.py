@@ -59,9 +59,11 @@ class GraphBuilder(DatastringBuilder):
         print(data.edge_index)
         nx.draw(G, with_labels=True, font_weight='bold')
         plt.show()
-
-    def get_batched_graphs(self):
-        return Batch.from_data_list([self.build_graph_from_string(graphstring) for graphstring in self.datastrings])
+        
+    def get_batched_data(self, datastrings=None):
+        if datastrings is None:
+            datastrings = self.datastrings
+        return Batch.from_data_list([self.build_graph_from_string(graphstring) for graphstring in datastrings])
 
     def produce_dataset(self):
         if not os.path.isdir('../assets/embedded_data'):
@@ -70,7 +72,7 @@ class GraphBuilder(DatastringBuilder):
         # if os.path.isfile(f'../assets/embedded_data/graph_embeddings{self.embedding_size}.npy'):
         #     return
 
-        data = self.get_embeddings(self.get_batched_graphs())
+        data = self.get_embeddings(self.get_batched_data(), detach=True)
         data = data.reshape([-1, self.embedding_size])
 
         np.save(f'../assets/embedded_data/graph_embeddings{self.embedding_size}.npy', data)

@@ -2,6 +2,7 @@ import logging
 from dataclasses import dataclass
 import egg.core
 from datetime import datetime
+import torch
 
 
 @dataclass
@@ -12,7 +13,9 @@ class ExperimentOptions:
     vocab_size: int = 20
 
     embedding_size: int = 30
+    use_prebuilt_embeddings: bool = True
     hidden_size: int = 80
+    device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     sender_cell: str = 'gru'  # 'rnn', 'gru', or 'lstm'
     length_cost: float = 0.0

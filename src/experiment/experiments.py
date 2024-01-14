@@ -1,5 +1,4 @@
 import logging
-from data.assure_dataset import assure_dataset
 from data.get_loaders import get_dataloaders
 from analysis.analyze_experiment import get_experiment_means, results_to_dataframe
 from experiment.game import get_game
@@ -30,11 +29,10 @@ def evalute_model(model, options, valid_loader):
     return pd.DataFrame({'target': target_labels, 'distractors': distractor_labels, 'message': messages, 'accuracy': accuracies})
 
 def run_experiment(options: ExperimentOptions, target_folder: str):
-    assure_dataset(options)
     print(f"Running {options}")
 
-    train_loader, valid_loader = get_dataloaders(options)
-    game = get_game(options)
+    train_loader, valid_loader, label_codes = get_dataloaders(options)
+    game = get_game(options, label_codes)
     results, model = perform_training(options, train_loader, valid_loader, game)
 
     interaction_results = evalute_model(model, options, valid_loader)
