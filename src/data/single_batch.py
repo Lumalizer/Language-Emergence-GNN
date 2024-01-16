@@ -6,7 +6,7 @@ import egg.core.util as util
 class SingleBatch:
     def __init__(self, dataloader: 'ExtendedDataLoader'):
         self.batch_idx = 0
-        util._set_seed(self.batch_idx)
+        # util._set_seed(self.batch_idx)
         self.dataloader = dataloader
         self.options = dataloader.options
         self.target_data = dataloader.dataset.data
@@ -28,7 +28,7 @@ class SingleBatch:
                 self.dataloader.collect_labels(target_label, distractor_labels)
 
         self.batch_idx += 1
-        util._set_seed(self.batch_idx)
+        # util._set_seed(self.batch_idx)
         return data_vectors_sender, y, data_vectors_receiver
 
     def get_randomized_data(self):
