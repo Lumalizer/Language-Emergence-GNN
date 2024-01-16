@@ -9,8 +9,6 @@ from data.image.image_embeddings import ImageEmbeddings
 from data.graph.graph_builder import GraphBuilder
 from data.image.image_loader import ImageLoader
 
-graph_embedder = GraphEmbeddings(30)
-image_embedder = ImageEmbeddings(30)
 
 class InformedSender(nn.Module):
     def __init__(self, options: ExperimentOptions, label_codes: dict[int, str]):
@@ -18,7 +16,7 @@ class InformedSender(nn.Module):
         self.options = options
         self.label_decoder = label_codes
         self.builder = GraphBuilder(embedding_size=options.embedding_size) if options.experiment == 'graph' else ImageLoader()
-        self.embedder = graph_embedder if self.options.experiment == 'graph' else image_embedder
+        self.embedder = GraphEmbeddings(options.embedding_size) if options.experiment == 'graph' else ImageEmbeddings(options.embedding_size)
 
         self.conv1 = nn.Conv2d(1, options.hidden_size, kernel_size=(options.game_size, 1), stride=(options.game_size, 1), bias=False)
         self.conv2 = nn.Conv2d(1, 1, kernel_size=(options.hidden_size, 1), stride=(options.hidden_size, 1), bias=False)
@@ -51,7 +49,7 @@ class Receiver(nn.Module):
         self.options = options
         self.label_decoder = label_codes
         self.builder = GraphBuilder(embedding_size=options.embedding_size) if options.experiment == 'graph' else ImageLoader()
-        self.embedder = graph_embedder if self.options.experiment == 'graph' else image_embedder
+        self.embedder = GraphEmbeddings(options.embedding_size) if options.experiment == 'graph' else ImageEmbeddings(options.embedding_size)
         self.lin1 = nn.Linear(options.hidden_size, options.embedding_size)
 
     def forward(self, signal, x, _aux_input=None):

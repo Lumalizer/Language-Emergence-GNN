@@ -6,38 +6,42 @@ from options import ExperimentOptions
 from experiment.train import perform_training
 import pandas as pd
 from datetime import datetime
+import egg.core as core
+
 
 def evalute_model(model, options, valid_loader):
     target_labels = []
     distractor_labels = []
 
+    def parse_message(message: list[list[float]]):
+        return [vocab[word_probs.index(1.0)] for word_probs in message]
+    
     def collect_labels(target: str, distractors: list[str]):
         target_labels.append(target)
         distractor_labels.append(distractors) 
 
     valid_loader.collect_labels = collect_labels
     loss, interaction = model.eval(valid_loader)
+    interaction: core.Interaction
 
     vocab = {i: i for i in range(options.vocab_size)}
-
-    def parse_message(message: list[list[float]]):
-        return [vocab[word_probs.index(1.0)] for word_probs in message]
-
-    messages = [parse_message(m) for m in interaction.message.tolist()]
+    message = [parse_message(m) for m in interaction.message.tolist()]
     accuracies = interaction.aux['acc'].tolist()
 
-    return pd.DataFrame({'target': target_labels, 'distractors': distractor_labels, 'message': messages, 'accuracy': accuracies})
+    return pd.DataFrame({'target': target_labels, 'distractors': distractor_labels, 
+                         'message': message, 'accuracy': accuracies}), interaction
 
 def run_experiment(options: ExperimentOptions, target_folder: str):
     print(f"Running {options}")
 
+    core.util._set_seed(42)
     train_loader, valid_loader, label_codes = get_dataloaders(options)
     game = get_game(options, label_codes)
+
     results, model = perform_training(options, train_loader, valid_loader, game)
+    interaction_results, interaction = evalute_model(model, options, valid_loader)
 
-    interaction_results = evalute_model(model, options, valid_loader)
-
-    return results_to_dataframe(results, interaction_results, options, target_folder)
+    return results_to_dataframe(results, interaction_results, interaction, options, target_folder)
 
 
 def run_experiments(options: ExperimentOptions, target_folder: str, n_repetitions: int = 1):

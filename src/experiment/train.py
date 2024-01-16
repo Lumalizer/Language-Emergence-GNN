@@ -2,7 +2,7 @@ import egg.core as core
 from options import ExperimentOptions
 from analysis.timer import timer
 from analysis.logger import ResultsCollector
-from analysis.TopographicSimilarityAtEnd import TopographicSimilarityAtEnd
+from analysis.topographic_similarity import TopographicSimilarityAtEnd
 
 
 @timer
