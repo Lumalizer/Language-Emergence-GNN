@@ -35,8 +35,8 @@ def run_experiment(options: ExperimentOptions, target_folder: str):
     print(f"Running {options}")
 
     core.util._set_seed(42)
-    train_loader, valid_loader, label_codes = get_dataloaders(options)
-    game = get_game(options, label_codes)
+    train_loader, valid_loader = get_dataloaders(options)
+    game = get_game(options)
 
     results, model = perform_training(options, train_loader, valid_loader, game)
     interaction_results, interaction = evalute_model(model, options, valid_loader)

@@ -12,6 +12,8 @@ import pickle
 def get_experiment_means(results: list[pd.DataFrame]):
     if not results:
         return pd.DataFrame()
+    elif len(results) == 1:
+        return results[0]
 
     to_mean = ['acc', 'loss', 'baseline', 'sender_entropy', 'receiver_entropy']
     r = results[0]

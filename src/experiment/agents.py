@@ -1,36 +1,29 @@
 # inspired by egg.zoo.signal_game.archs
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from options import ExperimentOptions
-from data.graph.graph_embeddings import GraphEmbeddings
-from data.image.image_embeddings import ImageEmbeddings
-from data.graph.graph_builder import GraphBuilder
-from data.image.image_loader import ImageLoader
-
+from experiment.graph_embeddings import GraphEmbeddings
+from experiment.image_embeddings import ImageEmbeddings
 
 class InformedSender(nn.Module):
-    def __init__(self, options: ExperimentOptions, label_codes: dict[int, str]):
+    def __init__(self, options: ExperimentOptions):
         super(InformedSender, self).__init__()
         self.options = options
-        self.label_decoder = label_codes
-        self.builder = GraphBuilder(embedding_size=options.embedding_size) if options.experiment == 'graph' else ImageLoader()
+        self.view_size = options.game_size if not options.sender_target_only else 1
         self.embedder = GraphEmbeddings(options.embedding_size) if options.experiment == 'graph' else ImageEmbeddings(options.embedding_size)
 
-        self.conv1 = nn.Conv2d(1, options.hidden_size, kernel_size=(options.game_size, 1), stride=(options.game_size, 1), bias=False)
+        self.conv1 = nn.Conv2d(1, options.hidden_size, kernel_size=(self.view_size, 1), stride=(self.view_size, 1), bias=False)
         self.conv2 = nn.Conv2d(1, 1, kernel_size=(options.hidden_size, 1), stride=(options.hidden_size, 1), bias=False)
         self.lin1 = nn.Linear(options.embedding_size, options.hidden_size, bias=False)
 
         self.rl1 = torch.nn.LeakyReLU()
         self.rl2 = torch.nn.LeakyReLU()
 
-    def forward(self, x, _aux_input=None):
-        if not self.options.use_prebuilt_embeddings:
-            x = self.builder.get_batched_data([self.label_decoder[i] for sublist in x.tolist() for i in sublist])
-            x = x.to(self.options.device)
-            x = self.embedder.forward(x, detach=self.options.use_prebuilt_embeddings)
-            x = x.view(self.options.batch_size, self.options.game_size, -1)
+    def forward(self, x, _aux_input):
+        x = _aux_input['vectors_sender']
+        x = self.embedder(x)
+        x = x.view(self.options.batch_size, self.view_size, -1)
             
         emb = x.unsqueeze(dim=1)                # batch_size x 1 x game_size x embedding_size
         h = self.conv1(emb)                     # batch_size x hidden_size x 1 x embedding_size
@@ -44,20 +37,16 @@ class InformedSender(nn.Module):
         return h
 
 class Receiver(nn.Module):
-    def __init__(self, options: ExperimentOptions, label_codes: dict[int, str]):
+    def __init__(self, options: ExperimentOptions):
         super(Receiver, self).__init__()
         self.options = options
-        self.label_decoder = label_codes
-        self.builder = GraphBuilder(embedding_size=options.embedding_size) if options.experiment == 'graph' else ImageLoader()
         self.embedder = GraphEmbeddings(options.embedding_size) if options.experiment == 'graph' else ImageEmbeddings(options.embedding_size)
         self.lin1 = nn.Linear(options.hidden_size, options.embedding_size)
 
-    def forward(self, signal, x, _aux_input=None):
-        if not self.options.use_prebuilt_embeddings:
-            x = self.builder.get_batched_data([self.label_decoder[i] for sublist in x.tolist() for i in sublist])
-            x = x.to(self.options.device)
-            x = self.embedder.forward(x, detach=self.options.use_prebuilt_embeddings)
-            x = x.view(self.options.batch_size, self.options.game_size, -1)
+    def forward(self, signal, x, _aux_input):
+        x = _aux_input['vectors_receiver']
+        x = self.embedder(x)
+        x = x.view(self.options.batch_size, self.options.game_size, -1)
 
         h_s = self.lin1(signal)                 # embed the signal
         h_s = h_s.unsqueeze(dim=1)              # batch_size x embedding_size

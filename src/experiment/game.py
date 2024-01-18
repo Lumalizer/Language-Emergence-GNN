@@ -7,14 +7,14 @@ from options import ExperimentOptions
 import torch.nn.functional as F
 
 
-def get_game(options: ExperimentOptions, label_codes: dict[int, str]):
+def get_game(options: ExperimentOptions):
     def loss_nll(_sender_input, _message, _receiver_input, receiver_output, labels, _aux_input):
         nll = F.nll_loss(receiver_output, labels, reduction="none")
         acc = (labels == receiver_output.argmax(dim=1)).float()
         return nll, {"acc": acc}
 
-    sender = InformedSender(options, label_codes)
-    receiver = Receiver(options, label_codes)
+    sender = InformedSender(options)
+    receiver = Receiver(options)
 
     sender = core.RnnSenderGS(sender, options.vocab_size, options.embedding_size, options.hidden_size, max_len=options.max_len, temperature=1.0, cell=options.sender_cell, trainable_temperature=True)
     receiver = core.RnnReceiverGS(receiver, options.vocab_size, options.embedding_size, options.hidden_size, cell=options.sender_cell)

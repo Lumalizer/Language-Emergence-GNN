@@ -1,5 +1,4 @@
 import torch
-import numpy as np
 import torch.nn as nn
 from torchvision import models
 
@@ -10,11 +9,7 @@ class ImageEmbeddings(nn.Module):
         self.resnet18.conv1 = torch.nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
         self.resnet18.fc = nn.Linear(512, embedding_size, bias=False)
 
-    def forward(self, data, detach: bool) -> np.ndarray:
+    def forward(self, data):
         # d is embedding_size
         d: torch.Tensor = self.resnet18(data)
-        
-        if detach:
-            d = d.detach().numpy()
-
         return d

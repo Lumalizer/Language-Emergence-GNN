@@ -1,11 +1,8 @@
-import os
 import torch
 from data.datastring_builder import DatastringBuilder
-from data.graph.graph_embeddings import GraphEmbeddings
 from torch_geometric.utils import to_networkx
 from torch_geometric.data import Data, Batch
 from dataclasses import dataclass
-import numpy as np
 
 
 @dataclass
@@ -20,7 +17,6 @@ class GraphBuilder(DatastringBuilder):
         self.shapes_codes = {s: i+1 for i, s in enumerate(sorted(self.shapes))}
         self.shapes_codes['origin'] = 0
         self.shapes_codes['0'] = -1
-        self.get_embeddings = GraphEmbeddings(self.embedding_size).forward
 
     def build_graph_from_string(self, graphstring: str):
         # Each node corresponds to a shape type (origin = 0)
@@ -46,6 +42,11 @@ class GraphBuilder(DatastringBuilder):
 
         data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
         return data
+        
+    def get_batched_data(self, datastrings=None):
+        if datastrings is None:
+            datastrings = self.datastrings
+        return Batch.from_data_list([self.build_graph_from_string(graphstring) for graphstring in datastrings])
 
     def visualize_graph(self, data: Data):
         # visualize graph
@@ -59,24 +60,6 @@ class GraphBuilder(DatastringBuilder):
         print(data.edge_index)
         nx.draw(G, with_labels=True, font_weight='bold')
         plt.show()
-        
-    def get_batched_data(self, datastrings=None):
-        if datastrings is None:
-            datastrings = self.datastrings
-        return Batch.from_data_list([self.build_graph_from_string(graphstring) for graphstring in datastrings])
-
-    def produce_dataset(self):
-        if not os.path.isdir('../assets/embedded_data'):
-            os.mkdir('../assets/embedded_data')
-
-        # if os.path.isfile(f'../assets/embedded_data/graph_embeddings{self.embedding_size}.npy'):
-        #     return
-
-        data = self.get_embeddings(self.get_batched_data(), detach=True)
-        data = data.reshape([-1, self.embedding_size])
-
-        np.save(f'../assets/embedded_data/graph_embeddings{self.embedding_size}.npy', data)
-        np.save(f'../assets/embedded_data/graph_embeddings{self.embedding_size}_labels.npy', np.array(self.datastrings))
 
     def visualize_embeddings(self, data):
         from sklearn.manifold import TSNE

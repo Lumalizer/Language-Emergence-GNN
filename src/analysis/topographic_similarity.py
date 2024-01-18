@@ -31,6 +31,7 @@ class TopographicSimilarityAtEnd(TopographicSimilarity):
         pass
 
     def on_validation_end(self, loss: float, logs, epoch: int):
+        return
         if epoch == self.n_epochs:
             super().on_validation_end(loss, logs, epoch)
 

@@ -14,7 +14,7 @@ def split_data_labels(options: ExperimentOptions):
         train_labels = labels[len(labels)//4:]
         valid_labels = labels[:len(labels)//4]
     else:
-        shapes = [s.replace('.png', '') for s in os.listdir('../assets/shapes') if s.endswith('.png')]
+        shapes = [s.replace('.png', '') for s in os.listdir('assets/shapes') if s.endswith('.png')]
         separated = sample(shapes, options.n_separated_shapes)
 
         train_labels = [l for l in labels if not any([s in l for s in separated])]
@@ -31,4 +31,4 @@ def split_data_labels(options: ExperimentOptions):
     logging.warning(f"Train size {len(train_labels)*100 // len(labels)}% ({len(train_labels)}), valid size {len(valid_labels)*100 // len(labels)}% ({len(valid_labels)})")
 
     assert len(set(train_labels).intersection(set(valid_labels))) == 0
-    return train_labels, valid_labels, label_codes
+    return train_labels, valid_labels

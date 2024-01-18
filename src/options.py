@@ -13,22 +13,22 @@ class ExperimentOptions:
     vocab_size: int = 20
 
     embedding_size: int = 30
-    use_prebuilt_embeddings: bool = True
     hidden_size: int = 80
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
+    sender_target_only: bool = True
 
     sender_cell: str = 'gru'  # 'rnn', 'gru', or 'lstm'
     length_cost: float = 0.0
     tau_s: float = 1.0
 
-    batch_size: int = 64
-    batches_per_epoch: int = 256
+    batch_size: int = 32
+    batches_per_epoch: int = 32
     n_epochs: int = 80
 
     n_separated_shapes: int = 8
     n_unseen_shapes: int = 0
 
-    dataset_location: str = '../assets/output'
+    dataset_location: str = 'assets/output'
     print_to_console: bool = True
     use_mixed_distractors: bool = False
 
