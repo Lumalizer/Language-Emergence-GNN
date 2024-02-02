@@ -21,7 +21,7 @@ class ExperimentOptions:
     length_cost: float = 0.0
     tau_s: float = 1.0
 
-    batch_size: int = 32
+    batch_size: int = 64
     batches_per_epoch: int = 32
     n_epochs: int = 80
 

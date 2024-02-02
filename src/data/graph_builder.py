@@ -29,7 +29,9 @@ class GraphBuilder(DatastringBuilder):
         graphelements = graphstring.split('_')
 
         for i, shape in enumerate(graphelements):
-            node_index = i + 1
+            if shape == '0':
+                continue
+            node_index = len(nodes)
             nodes.append(self.shapes_codes[shape])
             # above or below origin
             edges.append((node_index, 0, self.pos_codes['above'] if i < 2 else self.pos_codes['below']))
