@@ -69,9 +69,9 @@ def plot_dataframe(df: pd.DataFrame, title: str, show_plot=True, save=True, save
 
     if save:
         if not save_target:
-            os.makedirs("../results", exist_ok=True)
+            os.makedirs("results", exist_ok=True)
             now = datetime.now().strftime("%Y_%d_%m_%H_%M_%S__")
-            save_target = f"../results/{now}"
+            save_target = f"results/{now}"
         
         title = title.replace('<br>', '')
         

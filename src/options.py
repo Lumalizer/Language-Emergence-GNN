@@ -56,4 +56,4 @@ class ExperimentOptions:
             raise ValueError(f"n_unseen_shapes_per_test_element must be 0, 1 or 2, got {self.n_unseen_shapes}")
 
     def __str__(self):
-        return f"{self.timestamp}_{self.experiment}_maxlen_{self.max_len}_vocab{self.vocab_size}_game{self.game_size}"
+        return f"{self.experiment}_maxlen_{self.max_len}_vocab{self.vocab_size}_game{self.game_size}"

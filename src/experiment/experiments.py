@@ -68,7 +68,7 @@ def run_experiments(options: ExperimentOptions, target_folder: str, n_repetition
 def run_series_experiments(experiments: list[ExperimentOptions], name: str, n_repetitions: int = 1):
     results = pd.DataFrame()
     now = datetime.now().strftime("%Y_%d_%m_%H_%M_%S")
-    target_folder = f"../results/{now + name}"
+    target_folder = f"results/{now + name}"
 
     for i, options in enumerate(experiments):
         logging.info(f"Running experiment {i+1}/{len(experiments)}")

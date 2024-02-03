@@ -52,14 +52,13 @@ class SingleBatch:
     def get_randomized_data_with_combinations(self):
         r = random.choice([0, 1, 2])
         if r == 0:
-            choices = np.array([self.get_mixed_game_ids(type="shape") for _ in range(self.options.batch_size)])
+            choices = torch.tensor(np.stack([self.get_mixed_game_ids(type="shape") for _ in range(self.options.batch_size)]))
         elif r == 1:
-            choices = np.array([self.get_mixed_game_ids(type="positions") for _ in range(self.options.batch_size)])
+            choices = torch.tensor(np.stack([self.get_mixed_game_ids(type="positions") for _ in range(self.options.batch_size)]))
         else:
             return self.get_randomized_data()
-
-        data_indexes_sender = torch.from_numpy(choices).to(self.options.device)
-        return data_indexes_sender
+        data_indexes_sender = choices.to(self.options.device)
+        return data_indexes_sender.long()
 
     def get_batch(self):
         indexes_sender = self.get_randomized_data_with_combinations() if self.options.use_mixed_distractors else self.get_randomized_data()
