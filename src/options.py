@@ -15,13 +15,13 @@ class ExperimentOptions:
     embedding_size: int = 30
     hidden_size: int = 80
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
-    sender_target_only: bool = True
+    sender_target_only: bool = False
 
     sender_cell: str = 'gru'  # 'rnn', 'gru', or 'lstm'
     length_cost: float = 0.0
     tau_s: float = 1.0
 
-    batch_size: int = 64
+    batch_size: int = 32
     batches_per_epoch: int = 32
     n_epochs: int = 80
 
@@ -31,6 +31,7 @@ class ExperimentOptions:
     dataset_location: str = 'assets/output'
     print_to_console: bool = True
     use_mixed_distractors: bool = False
+    use_systematic_distractors: bool = False
 
     @classmethod
     def from_dict(cls, d: dict):

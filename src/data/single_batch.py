@@ -59,31 +59,50 @@ class SingleBatch:
             return self.get_randomized_data()
         data_indexes_sender = choices.to(self.options.device)
         return data_indexes_sender.long()
+    
+    def get_systematic_distractors(self):
+        systematic = self.dataloader.dataset.systematic_games
+        # pick batch_size random integers in the range of len(systematic.targets)
+        indexes = random.sample(range(len(systematic.targets)), self.options.batch_size)
+        graphstrings = [[systematic.targets[i]]+random.choices(systematic.distractors[i], k=4) for i in indexes]
+        graphstrings = [[self.dataloader.dataset.reverse_ids[ele] for ele in elements] for elements in graphstrings]
+        return torch.tensor(graphstrings).long().to(self.options.device)
 
     def get_batch(self):
-        indexes_sender = self.get_randomized_data_with_combinations() if self.options.use_mixed_distractors else self.get_randomized_data()
-
         permutes = torch.stack([torch.randperm(self.options.game_size) for _ in range(self.options.batch_size)])
+
+        if self.options.use_systematic_distractors:
+            indexes_sender = self.get_systematic_distractors()
+            y = permutes[:, 0]
+            # y = permutes.argmin(dim=1)
+        elif self.options.use_mixed_distractors:
+            indexes_sender = self.get_randomized_data_with_combinations()
+            y = permutes.argmin(dim=1)
+        else:
+            indexes_sender = self.get_randomized_data()
+            y = permutes.argmin(dim=1)
+
         indexes_receiver = indexes_sender[torch.arange(self.options.batch_size).unsqueeze(1), permutes]
-        y = permutes.argmin(dim=1)
 
         if self.options.sender_target_only:
             # give sender only the target data
             for j in range(self.options.batch_size):
+                for i in range(self.options.game_size):
+                    indexes_sender[j, i] = indexes_receiver[j, y[j]]
                 indexes_sender[j, 0] = indexes_receiver[j, y[j]]
 
             indexes_sender = indexes_sender[:, :1]
 
         # return indexes_sender, y, indexes_receiver, indexes_receiver
         if self.options.experiment == 'graph':
-            vectors_sender = Batch.from_data_list(self.target_data.index_select(indexes_sender))
-            vectors_receiver = Batch.from_data_list(self.target_data.index_select(indexes_receiver))
+            data_sender = Batch.from_data_list(self.target_data.index_select(indexes_sender))
+            data_receiver = Batch.from_data_list(self.target_data.index_select(indexes_receiver))
         else:
-            vectors_sender = self.target_data.index_select(0, indexes_sender.flatten())
-            vectors_receiver = self.target_data.index_select(0, indexes_receiver.flatten())
+            data_sender = self.target_data.index_select(0, indexes_sender.flatten())
+            data_receiver = self.target_data.index_select(0, indexes_receiver.flatten())
 
         # return vectors_sender, y, vectors_receiver, indexes_receiver
-        return None, y, None, indexes_receiver, {'vectors_sender': vectors_sender, 'y': y, 'vectors_receiver': vectors_receiver}
+        return None, y, None, indexes_receiver, {'data_sender': data_sender, 'y': y, 'data_receiver': data_receiver}
 
 
 if __name__ == '__main__':

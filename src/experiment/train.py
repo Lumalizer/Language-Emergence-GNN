@@ -14,7 +14,8 @@ def perform_training(options: ExperimentOptions, train_loader, valid_loader, gam
         optimizer=core.build_optimizer(game.parameters()),
         train_data=train_loader,
         validation_data=valid_loader,
-        callbacks=[ResultsCollector(results, options), TopographicSimilarityAtEnd(options.n_epochs)]
+        callbacks=[ResultsCollector(results, options), TopographicSimilarityAtEnd(options.n_epochs)],
+        device=options.device,
     )
 
     trainer.train(n_epochs=options.n_epochs)

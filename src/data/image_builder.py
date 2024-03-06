@@ -2,7 +2,6 @@ import os
 from PIL import Image
 from dataclasses import dataclass
 from data.datastring_builder import DatastringBuilder
-from experiment.image_embeddings import ImageEmbeddings
 
 
 @dataclass
@@ -15,16 +14,12 @@ class ImagePlacement:
 class ImageBuilder(DatastringBuilder):
     embedding_size: int = None
 
-    def __post_init__(self):
-        super().__post_init__()
-        assert self.embedding_size is not None
-        self.get_embeddings = ImageEmbeddings(self.embedding_size).forward
-
     @staticmethod
     def create_pasted_image(filename: str, *images: list[ImagePlacement]):
         new_image = Image.open('assets/white.png').convert('L')
         for image in images:
             new_image.paste(Image.open(image.image), image.position)
+
         new_image.save(filename)
         new_image.close()
 
