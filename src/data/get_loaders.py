@@ -8,7 +8,7 @@ from analysis.timer import timer
 from typing import Union
 import numpy as np
 from collections import defaultdict
-
+from random import sample
 
 @timer
 def get_dataloaders(options: ExperimentOptions):
@@ -20,9 +20,23 @@ def get_dataloaders(options: ExperimentOptions):
         dataset_class = ShapesPosGraphDataset
     else:
         raise ValueError(f'Unknown experiment type: {options.experiment}. Possible values: image, graph')
+    
+    excl_train = []
+    excl_test = []
 
-    train_loader = ExtendedDataLoader(dataset_class(train_labels, options), options)
-    valid_loader = ExtendedDataLoader(dataset_class(valid_labels, options), options)
+    if options.use_systematic_distractors:
+        valid_labels = train_labels
+        excl_train = sample(train_labels, len(train_labels)//4)
+        excl_test = [l for l in valid_labels if l not in excl_train]
+    
+
+    train_loader = ExtendedDataLoader(dataset_class(train_labels, options, excluded_graphstrings=excl_train), options)
+    valid_loader = ExtendedDataLoader(dataset_class(valid_labels, options, excluded_graphstrings=excl_test), options)
+
+    if options.use_systematic_distractors:
+        sys1 = train_loader.dataset.systematic_games
+        sys2 = valid_loader.dataset.systematic_games
+        assert not(set(sys1.targets).intersection(set(sys2.targets)))
 
     return train_loader, valid_loader
 

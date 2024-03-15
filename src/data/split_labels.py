@@ -11,6 +11,9 @@ def split_data_labels(options: ExperimentOptions):
     label_codes = {i: l for i, l in enumerate(labels)}
 
     if options.n_unseen_shapes == 0:
+        if options.use_systematic_distractors:
+            return labels, labels
+        
         train_labels = labels[len(labels)//4:]
         valid_labels = labels[:len(labels)//4]
     else:

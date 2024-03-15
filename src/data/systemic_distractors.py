@@ -49,7 +49,7 @@ class SystematicDistractors():
                 +---+---+
 
     """
-    def __init__(self, figures:set, allow_repetitions:bool, n_figsxgrid=2):
+    def __init__(self, figures:set, allow_repetitions:bool, n_figsxgrid=2, excluded_graphstrings=[]):
         """
 
         :param figures: collection of figures that can populate the grid
@@ -73,9 +73,20 @@ class SystematicDistractors():
 
         #Generate all possible distractors for the target
         self.distractors=self.getDistractors(self.targets)
-
+    
         self.targets = [self.rebuild_graphstring(target) for target in self.targets]
         self.distractors = [[self.rebuild_graphstring(distractor) for distractor in distractors] for distractors in self.distractors]
+        
+        t = []
+        d = []
+
+        for i in range(len(self.targets)):
+            if self.targets[i] not in excluded_graphstrings:
+                t.append(self.targets[i])
+                d.append(self.distractors[i])
+        
+        self.targets = t
+        self.distractors = d
 
         # for i,target in enumerate(self.targets):
         #     print(target, self.distractors[i])

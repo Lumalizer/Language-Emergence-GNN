@@ -5,13 +5,13 @@ from data.systemic_distractors import SystematicDistractors
 
 
 class ShapesPosGraphDataset(Dataset):
-    def __init__(self, labels: list[str], options: ExperimentOptions):
+    def __init__(self, labels: list[str], options: ExperimentOptions, excluded_graphstrings=[]):
         self.labels = labels
         self.reverse_ids = {l: i for i, l in enumerate(labels)}
         self.options = options
         self.shapes = set([item for sublist in [l.split("_") for l in labels] for item in sublist])
         self.shapes.remove('0')
-        self.systematic_games = SystematicDistractors(self.shapes, False)
+        self.systematic_games = SystematicDistractors(self.shapes, False, excluded_graphstrings=excluded_graphstrings)
 
         builder = GraphBuilder(embedding_size=options.embedding_size)
         self.data = builder.get_batched_data(datastrings=labels).to(options.device)
