@@ -1,11 +1,11 @@
 import tqdm
 import json
 from egg.core.callbacks import ConsoleLogger
-from options import ExperimentOptions
+from options import Options
 
 
 class ResultsCollector(ConsoleLogger):
-    def __init__(self, results: list, options: ExperimentOptions):
+    def __init__(self, results: list, options: Options):
         super().__init__(True, True)
         self.results = results
         self.options = options

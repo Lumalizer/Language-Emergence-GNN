@@ -3,7 +3,7 @@ import os
 import uuid
 import pandas as pd
 import statistics
-from options import ExperimentOptions
+from options import Options
 from analysis.vocab import vocab_error_analysis
 import egg.core as core
 import pickle
@@ -27,7 +27,7 @@ def get_experiment_means(results: list[pd.DataFrame]):
     return r
 
 
-def results_to_dataframe(results: str, interaction_results: pd.DataFrame(), interaction: core.Interaction, options: ExperimentOptions, folder: str, save: bool = True) -> pd.DataFrame:
+def results_to_dataframe(results: str, interaction_results: pd.DataFrame, interaction: core.Interaction, options: Options, folder: str, save: bool = True) -> pd.DataFrame:
     initial = pd.DataFrame({'experiment': options.experiment, 'mode': 'train', 'epoch': [0], 'acc': [1/options.game_size]})
     initial = pd.concat((initial, pd.DataFrame({'experiment': options.experiment, 'mode': 'test', 'epoch': [0], 'acc': [1/options.game_size]})))
     results = pd.concat((initial, pd.DataFrame([json.loads(line) for line in results.split('\n') if line])))

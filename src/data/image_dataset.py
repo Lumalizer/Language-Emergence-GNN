@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset
 from torchvision.io import ImageReadMode, read_image
-from options import ExperimentOptions
+from options import Options
 import torch
 from data.image_builder import ImageBuilder
 from torchvision.transforms import Resize
@@ -11,7 +11,7 @@ ImageBuilder().assure_images()
 
 
 class ShapesPosImgDataset(Dataset):
-    def __init__(self, labels: list[str], options: ExperimentOptions, excluded_graphstrings=[]):
+    def __init__(self, labels: list[str], options: Options, excluded_graphstrings=[]):
         self.image_path = f"assets/output/"
         self.labels = labels
         self.reverse_ids = {l: i for i, l in enumerate(labels)}

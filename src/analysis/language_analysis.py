@@ -1,4 +1,4 @@
-from egg.core.language_analysis import TopographicSimilarity
+from egg.core.language_analysis import TopographicSimilarity, Disent
 import pickle
 import torch
 import json
@@ -49,6 +49,30 @@ class TopographicSimilarityAtEnd(TopographicSimilarity):
         topsim = self.compute_topsim(sender_input, messages, self.sender_input_distance_fn, self.message_distance_fn)
 
         output = json.dumps(dict(topsim=topsim, mode=mode, epoch=epoch))
+        print(output, flush=True)
+
+class DisentAtEnd(Disent):
+    def __init__(self, n_epochs):
+        super().__init__(is_gumbel=True, vocab_size=7, compute_bosdis=True, compute_posdis=True)
+        self.n_epochs = n_epochs
+
+    def on_epoch_end(self, loss: float, logs, epoch: int):
+        pass
+
+    def on_validation_end(self, loss: float, logs, epoch: int):
+        if epoch == self.n_epochs:
+            super().on_validation_end(loss, logs, epoch)
+
+    def print_message(self, logs: Interaction, tag: str, epoch: int):
+        message = logs.message.argmax(dim=-1) if self.is_gumbel else logs.message
+
+        sender_input = torch.flatten(logs.aux_input['vectors_sender'], start_dim=1)
+
+        posdis = self.posdis(sender_input, message) if self.compute_posdis else None
+        bosdis = self.bosdis(sender_input, message, self.vocab_size) if self.compute_bosdis else None
+        
+
+        output = json.dumps(dict(posdis=posdis, bosdis=bosdis, mode=tag, epoch=epoch))
         print(output, flush=True)
 
 

@@ -2,7 +2,7 @@ import logging
 from data.get_loaders import get_dataloaders
 from analysis.analyze_experiment import get_experiment_means, results_to_dataframe
 from experiment.game import get_game
-from options import ExperimentOptions
+from options import Options
 from experiment.train import perform_training
 import pandas as pd
 from datetime import datetime
@@ -31,7 +31,7 @@ def evalute_model(model, options, valid_loader):
     return pd.DataFrame({'target': target_labels, 'distractors': distractor_labels, 
                          'message': message, 'accuracy': accuracies}), interaction
 
-def run_experiment(options: ExperimentOptions, target_folder: str):
+def run_experiment(options: Options, target_folder: str):
     print(f"Running {options}")
 
     core.util._set_seed(42)
@@ -44,13 +44,13 @@ def run_experiment(options: ExperimentOptions, target_folder: str):
     return results_to_dataframe(results, interaction_results, interaction, options, target_folder)
 
 
-def run_experiments(options: ExperimentOptions, target_folder: str, n_repetitions: int = 1):
+def run_experiments(options: Options, target_folder: str, n_repetitions: int = 1):
     run_graph = options.experiment in ['both', 'graph']
     run_image = options.experiment in ['both', 'image']
 
-    graph_options = ExperimentOptions.from_dict(options)
+    graph_options = Options.from_dict(options)
     graph_options.experiment = 'graph'
-    image_options = ExperimentOptions.from_dict(options)
+    image_options = Options.from_dict(options)
     image_options.experiment = 'image'
 
     results_graph = []
@@ -65,7 +65,7 @@ def run_experiments(options: ExperimentOptions, target_folder: str, n_repetition
 
     return pd.concat((results_graph, results_img))
 
-def run_series_experiments(experiments: list[ExperimentOptions], name: str, n_repetitions: int = 1):
+def run_series_experiments(experiments: list[Options], name: str, n_repetitions: int = 1):
     results = pd.DataFrame()
     now = datetime.now().strftime("%Y_%d_%m_%H_%M_%S")
     target_folder = f"results/{now + name}"

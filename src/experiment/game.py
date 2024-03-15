@@ -3,11 +3,11 @@
 
 import egg.core as core
 from experiment.agents import InformedSender, Receiver
-from options import ExperimentOptions
+from options import Options
 import torch.nn.functional as F
 
 
-def get_game(options: ExperimentOptions):
+def get_game(options: Options):
     def loss_nll(_sender_input, _message, _receiver_input, receiver_output, labels, _aux_input):
         nll = F.nll_loss(receiver_output, labels, reduction="none")
         acc = (labels == receiver_output.argmax(dim=1)).float()

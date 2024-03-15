@@ -71,7 +71,7 @@ class SingleBatch:
     def get_batch(self):
         permutes = torch.stack([torch.randperm(self.options.game_size) for _ in range(self.options.batch_size)])
 
-        if self.options.use_systematic_distractors:
+        if self.options.systemic_distractors:
             indexes_sender = self.get_systematic_distractors()
             y = permutes[:, 0]
             # y = permutes.argmin(dim=1)

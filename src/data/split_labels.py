@@ -2,16 +2,16 @@ import os
 import logging
 from random import sample
 from itertools import combinations
-from options import ExperimentOptions
+from options import Options
 from data.datastring_builder import DatastringBuilder
 
 
-def split_data_labels(options: ExperimentOptions):
+def split_data_labels(options: Options):
     labels = DatastringBuilder().datastrings
     label_codes = {i: l for i, l in enumerate(labels)}
 
     if options.n_unseen_shapes == 0:
-        if options.use_systematic_distractors:
+        if options.systemic_distractors:
             return labels, labels
         
         train_labels = labels[len(labels)//4:]

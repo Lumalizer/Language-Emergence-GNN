@@ -2,12 +2,12 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from options import ExperimentOptions
+from options import Options
 from experiment.graph_embeddings import GraphEmbeddings
 from experiment.image_embeddings import ImageEmbeddings
 
 class InformedSender(nn.Module):
-    def __init__(self, options: ExperimentOptions):
+    def __init__(self, options: Options):
         super(InformedSender, self).__init__()
         self.options = options
         self.view_size = options.game_size if not options.sender_target_only else 1
@@ -37,7 +37,7 @@ class InformedSender(nn.Module):
         return h
 
 class Receiver(nn.Module):
-    def __init__(self, options: ExperimentOptions):
+    def __init__(self, options: Options):
         super(Receiver, self).__init__()
         self.options = options
         self.embedder = GraphEmbeddings(options.embedding_size) if options.experiment == 'graph' else ImageEmbeddings(options.embedding_size)

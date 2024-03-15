@@ -1,11 +1,11 @@
 from torch_geometric.data import Dataset
-from options import ExperimentOptions
+from options import Options
 from data.graph_builder import GraphBuilder
 from data.systemic_distractors import SystematicDistractors
 
 
 class ShapesPosGraphDataset(Dataset):
-    def __init__(self, labels: list[str], options: ExperimentOptions, excluded_graphstrings=[]):
+    def __init__(self, labels: list[str], options: Options, excluded_graphstrings=[]):
         self.labels = labels
         self.reverse_ids = {l: i for i, l in enumerate(labels)}
         self.options = options

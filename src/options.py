@@ -6,7 +6,7 @@ import torch
 
 
 @dataclass
-class ExperimentOptions:
+class Options:
     experiment: str
     game_size: int = 2
     max_len: int = 4
@@ -15,7 +15,7 @@ class ExperimentOptions:
     embedding_size: int = 30
     hidden_size: int = 80
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
-    sender_target_only: bool = False
+    sender_target_only: bool = True
 
     sender_cell: str = 'gru'  # 'rnn', 'gru', or 'lstm'
     length_cost: float = 0.0
@@ -31,7 +31,7 @@ class ExperimentOptions:
     dataset_location: str = 'assets/output'
     print_to_console: bool = True
     use_mixed_distractors: bool = False
-    use_systematic_distractors: bool = False
+    systemic_distractors: bool = False
 
     @classmethod
     def from_dict(cls, d: dict):
