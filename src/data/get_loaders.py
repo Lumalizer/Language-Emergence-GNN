@@ -6,8 +6,6 @@ from options import Options
 from torch.utils.data import DataLoader
 from analysis.timer import timer
 from typing import Union
-import numpy as np
-from collections import defaultdict
 from random import sample
 
 @timer
@@ -47,46 +45,6 @@ class ExtendedDataLoader(DataLoader):
         self.dataset: Union[ShapesPosImgDataset, ShapesPosGraphDataset]
         self.options = options
         self.collect_labels = collect_labels
-        self.shape_names_dict, self.shape_names, self.shape_combinations = self.get_organized_shapes(dataset.labels)
-        self.position_names_dict, self.position_names, self.position_combinations = self.get_organize_positions(dataset.labels)
-
-    @staticmethod
-    def get_organized_shapes(labels):
-        shape_names_dict = defaultdict(list)
-
-        for i, graphstring in enumerate(labels):
-            shapes = sorted([g for g in graphstring.split('_') if g != '0'])
-
-            for shape in shapes:
-                shape_names_dict[shape].append(i)
-
-            combined_shape = shapes[0]+"_" + shapes[1]
-            shape_names_dict[combined_shape].append(i)
-
-        shape_array_dict = {k: np.array(v) for k, v in shape_names_dict.items() if len(v) > 2}
-        shape_names = [k for k in shape_array_dict.keys() if "_" not in k]
-        shape_combinations = [k for k in shape_array_dict.keys() if "_" in k]
-
-        return shape_array_dict, shape_names, shape_combinations
-    
-    @staticmethod
-    def get_organize_positions(labels):
-        position_names_dict = defaultdict(list)
-
-        for i, graphstring in enumerate(labels):
-            positions_empty = [j for j, g in enumerate(graphstring.split('_')) if g == '0']
-
-            for position in positions_empty:
-                position_names_dict[str(position)].append(i)
-
-            combined_positions = "_".join([str(n) for n in sorted(positions_empty)])
-            position_names_dict[combined_positions].append(i)
-
-        position_array_dict = {k: np.array(v) for k, v in position_names_dict.items() if len(v) > 2}
-        position_names = [k for k in position_array_dict.keys() if "_" not in k]
-        position_combinations = [k for k in position_array_dict.keys() if "_" in k]
-
-        return position_array_dict, position_names, position_combinations
 
     def __iter__(self):
         return SingleBatch(self)

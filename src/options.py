@@ -33,7 +33,6 @@ class Options:
 
     dataset_location: str = 'assets/output'
     print_to_console: bool = True
-    use_mixed_distractors: bool = False
     systemic_distractors: bool = False
 
     @property
