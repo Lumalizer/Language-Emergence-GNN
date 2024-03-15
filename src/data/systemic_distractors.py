@@ -74,6 +74,9 @@ class SystematicDistractors():
         #Generate all possible distractors for the target
         self.distractors=self.getDistractors(self.targets)
     
+        self.post_adapter(excluded_graphstrings)
+
+    def post_adapter(self, excluded_graphstrings):
         self.targets = [self.rebuild_graphstring(target) for target in self.targets]
         self.distractors = [[self.rebuild_graphstring(distractor) for distractor in distractors] for distractors in self.distractors]
         
@@ -81,15 +84,15 @@ class SystematicDistractors():
         d = []
 
         for i in range(len(self.targets)):
-            if self.targets[i] not in excluded_graphstrings:
-                t.append(self.targets[i])
-                d.append(self.distractors[i])
+            target = self.targets[i]
+            distractors = self.distractors[i]
+            if target not in excluded_graphstrings:
+                assert len(distractors) + 1 == len(set(distractors + [target]))
+                t.append(target)
+                d.append(distractors)
         
         self.targets = t
         self.distractors = d
-
-        # for i,target in enumerate(self.targets):
-        #     print(target, self.distractors[i])
 
     @staticmethod
     def rebuild_graphstring(input):

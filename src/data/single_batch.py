@@ -64,9 +64,9 @@ class SingleBatch:
         systematic = self.dataloader.dataset.systematic_games
         # pick batch_size random integers in the range of len(systematic.targets)
         indexes = random.sample(range(len(systematic.targets)), self.options.batch_size)
-        graphstrings = [[systematic.targets[i]]+random.choices(systematic.distractors[i], k=4) for i in indexes]
-        graphstrings = [[self.dataloader.dataset.reverse_ids[ele] for ele in elements] for elements in graphstrings]
-        return torch.tensor(graphstrings).long().to(self.options.device)
+        graphstrings = [[systematic.targets[i]]+random.sample(systematic.distractors[i], k=4) for i in indexes]
+        ids = [[self.dataloader.dataset.reverse_ids[ele] for ele in elements] for elements in graphstrings]
+        return torch.tensor(ids).long().to(self.options.device)
 
     def get_batch(self):
         permutes = torch.stack([torch.randperm(self.options.game_size) for _ in range(self.options.batch_size)])
