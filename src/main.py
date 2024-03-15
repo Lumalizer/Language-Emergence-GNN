@@ -10,7 +10,8 @@ logging.basicConfig(level=logging.INFO)
 coloredlogs.install(level='INFO')
 
 experiments = [
-    Options(experiment='both', game_size=5, max_len=4, vocab_size=7, n_epochs=250, sender_target_only=True, systemic_distractors=False),
+    Options(experiment='both', game_size=5, max_len=4, vocab_size=7, n_epochs=2, sender_target_only=False, systemic_distractors=False),
+    Options(experiment='both', game_size=2, max_len=4, vocab_size=7, n_epochs=1000, sender_target_only=True, systemic_distractors=True),
 ]
 
 results, target_folder = run_series_experiments(experiments, 'graphvsimage', n_repetitions=1)

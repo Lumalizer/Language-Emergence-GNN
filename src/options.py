@@ -8,6 +8,9 @@ import torch
 @dataclass
 class Options:
     experiment: str
+    name: str = ""
+    _target_folder: str = ""
+    _timestamp: str = ""
     game_size: int = 2
     max_len: int = 4
     vocab_size: int = 20
@@ -15,7 +18,7 @@ class Options:
     embedding_size: int = 30
     hidden_size: int = 80
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
-    sender_target_only: bool = True
+    sender_target_only: bool = False
 
     sender_cell: str = 'gru'  # 'rnn', 'gru', or 'lstm'
     length_cost: float = 0.0
@@ -33,12 +36,17 @@ class Options:
     use_mixed_distractors: bool = False
     systemic_distractors: bool = False
 
+    @property
+    def timestamp(self):
+        if self._timestamp == "":
+            self._timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        return self._timestamp
+
     @classmethod
     def from_dict(cls, d: dict):
         return cls(**{k: v for k, v in vars(d).items() if k in cls.__dataclass_fields__})
 
     def __post_init__(self):
-        self.timestamp = datetime.now().strftime("%Y_%d_%m_%H_%M_%S__")
         out_options = egg.core.init(params=['--random_seed=42',
                                             '--lr=1e-3',
                                             f'--batch_size={self.batch_size}',
@@ -57,4 +65,4 @@ class Options:
             raise ValueError(f"n_unseen_shapes_per_test_element must be 0, 1 or 2, got {self.n_unseen_shapes}")
 
     def __str__(self):
-        return f"{self.experiment}_maxlen_{self.max_len}_vocab{self.vocab_size}_game{self.game_size}"
+        return f"{self.timestamp + self.name + '_' if self.name else ''}{self.experiment}_maxlen_{self.max_len}_vocab{self.vocab_size}_game{self.game_size}"

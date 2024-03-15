@@ -3,6 +3,7 @@ import pickle
 import torch
 import json
 from egg.core import Interaction
+from options import Options
 
 def topsim_single(interaction):
     if interaction.endswith('.pkl'):
@@ -29,9 +30,10 @@ def topsim_double_swap(interaction1, interaction2):
     topsim.print_message(interaction1, 'gumbel', 0)
 
 class TopographicSimilarityAtEnd(TopographicSimilarity):
-    def __init__(self, n_epochs):
+    def __init__(self, options: Options):
         super().__init__('hamming','edit', is_gumbel=True)
-        self.n_epochs = n_epochs
+        self.options = options
+        self.n_epochs = options.n_epochs
 
     def on_epoch_end(self, loss: float, logs, epoch: int):
         pass
@@ -51,10 +53,14 @@ class TopographicSimilarityAtEnd(TopographicSimilarity):
         output = json.dumps(dict(topsim=topsim, mode=mode, epoch=epoch))
         print(output, flush=True)
 
+        with open(self.options._target_folder + "/experiments/topsim_" + str(self.options) + ".json", "w") as f:
+            json.dump(output, f)
+
 class DisentAtEnd(Disent):
-    def __init__(self, n_epochs):
-        super().__init__(is_gumbel=True, vocab_size=7, compute_bosdis=True, compute_posdis=True)
-        self.n_epochs = n_epochs
+    def __init__(self, options: Options):
+        super().__init__(is_gumbel=True, vocab_size=options.vocab_size, compute_bosdis=True, compute_posdis=True)
+        self.options = options
+        self.n_epochs = options.n_epochs
 
     def on_epoch_end(self, loss: float, logs, epoch: int):
         pass
@@ -67,13 +73,16 @@ class DisentAtEnd(Disent):
         message = logs.message.argmax(dim=-1) if self.is_gumbel else logs.message
 
         sender_input = torch.flatten(logs.aux_input['vectors_sender'], start_dim=1)
-
+        
         posdis = self.posdis(sender_input, message) if self.compute_posdis else None
         bosdis = self.bosdis(sender_input, message, self.vocab_size) if self.compute_bosdis else None
         
 
         output = json.dumps(dict(posdis=posdis, bosdis=bosdis, mode=tag, epoch=epoch))
         print(output, flush=True)
+
+        with open(self.options._target_folder + "/experiments/dissent_" + str(self.options) + ".json", "w") as f:
+            json.dump(output, f)
 
 
 if __name__ == '__main__':
