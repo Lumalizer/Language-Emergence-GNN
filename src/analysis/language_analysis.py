@@ -29,60 +29,59 @@ def topsim_double_swap(interaction1, interaction2):
     interaction1.sender_input = interaction2.sender_input
     topsim.print_message(interaction1, 'gumbel', 0)
 
+def run_or_skip_metrics(epoch, max_epoch):
+    return epoch < 5 or not epoch % 2 and epoch < 20 or not epoch % 40 or epoch == max_epoch
+
 class TopographicSimilarityAtEnd(TopographicSimilarity):
     def __init__(self, options: Options):
-        super().__init__('hamming','edit', is_gumbel=True)
+        super().__init__('hamming','edit', is_gumbel=True, compute_topsim_train_set=True)
         self.options = options
-        self.n_epochs = options.n_epochs
 
     def on_epoch_end(self, loss: float, logs, epoch: int):
-        pass
+        if run_or_skip_metrics(epoch, self.options.n_epochs):
+            super().on_epoch_end(loss, logs, epoch)
 
     def on_validation_end(self, loss: float, logs, epoch: int):
-        if epoch == self.n_epochs:
+        if run_or_skip_metrics(epoch, self.options.n_epochs):
             super().on_validation_end(loss, logs, epoch)
     
     def print_message(self, logs: Interaction, mode: str, epoch: int) -> None:
         messages = logs.message.argmax(dim=-1) if self.is_gumbel else logs.message
         messages = [msg.tolist() for msg in messages]
 
-        sender_input = torch.flatten(logs.aux_input['vectors_sender'], start_dim=1)
-
+        sender_input = torch.flatten(logs.aux_input['vectors_sender'], start_dim=1).detach()
         topsim = self.compute_topsim(sender_input, messages, self.sender_input_distance_fn, self.message_distance_fn)
-
         output = json.dumps(dict(topsim=topsim, mode=mode, epoch=epoch))
-        print(output, flush=True)
+        # print(output, flush=True)
 
-        with open(self.options._target_folder + "/experiments/topsim_" + str(self.options) + ".json", "w") as f:
-            json.dump(output, f)
+        with open(self.options._target_folder + "/experiments/topsim_" + str(self.options) + ".json", "a") as f:
+            f.write(output + "\n")
 
 class DisentAtEnd(Disent):
     def __init__(self, options: Options):
-        super().__init__(is_gumbel=True, vocab_size=options.vocab_size, compute_bosdis=True, compute_posdis=True)
+        super().__init__(is_gumbel=True, vocab_size=options.vocab_size, 
+                         compute_bosdis=True, compute_posdis=True, print_train=True)
         self.options = options
-        self.n_epochs = options.n_epochs
 
     def on_epoch_end(self, loss: float, logs, epoch: int):
-        pass
+        if run_or_skip_metrics(epoch, self.options.n_epochs):
+            super().on_epoch_end(loss, logs, epoch)
 
     def on_validation_end(self, loss: float, logs, epoch: int):
-        if epoch == self.n_epochs:
+        if run_or_skip_metrics(epoch, self.options.n_epochs):
             super().on_validation_end(loss, logs, epoch)
 
     def print_message(self, logs: Interaction, tag: str, epoch: int):
         message = logs.message.argmax(dim=-1) if self.is_gumbel else logs.message
-
         sender_input = torch.flatten(logs.aux_input['vectors_sender'], start_dim=1)
-        
+    
         posdis = self.posdis(sender_input, message) if self.compute_posdis else None
         bosdis = self.bosdis(sender_input, message, self.vocab_size) if self.compute_bosdis else None
-        
-
         output = json.dumps(dict(posdis=posdis, bosdis=bosdis, mode=tag, epoch=epoch))
-        print(output, flush=True)
+        # print(output, flush=True)
 
-        with open(self.options._target_folder + "/experiments/dissent_" + str(self.options) + ".json", "w") as f:
-            json.dump(output, f)
+        with open(self.options._target_folder + "/experiments/dissent_" + str(self.options) + ".json", "a") as f:
+            f.write(output + "\n")
 
 
 if __name__ == '__main__':
