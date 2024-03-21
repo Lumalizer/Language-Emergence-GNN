@@ -1,8 +1,7 @@
 import egg.core as core
 from options import Options
 from analysis.timer import timer
-from analysis.logger import ResultsCollector
-from analysis.language_analysis import DisentAtEnd, TopographicSimilarityAtEnd
+from analysis.callbacks import ResultsCollector, DisentAtEnd, TopographicSimilarityAtEnd
 
 
 @timer
@@ -14,9 +13,7 @@ def perform_training(options: Options, train_loader, valid_loader, game):
         optimizer=core.build_optimizer(game.parameters()),
         train_data=train_loader,
         validation_data=valid_loader,
-        callbacks=[ResultsCollector(results, options), 
-                   DisentAtEnd(options), 
-                   TopographicSimilarityAtEnd(options)],
+        callbacks=[ResultsCollector(results, options), DisentAtEnd(options), TopographicSimilarityAtEnd(options)],
         device=options.device,
     )
 

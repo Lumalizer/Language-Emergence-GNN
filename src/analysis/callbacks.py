@@ -4,30 +4,42 @@ import torch
 import json
 from egg.core import Interaction
 from options import Options
+import tqdm
+import json
+from egg.core.callbacks import ConsoleLogger
+from options import Options
+import wandb
 
-def topsim_single(interaction):
-    if interaction.endswith('.pkl'):
-        with open(f'results/{interaction}', 'rb') as f:
-            interaction = pickle.load(f)
+class ResultsCollector(ConsoleLogger):
+    def __init__(self, results: list, options: Options):
+        super().__init__(True, True)
+        self.results = results
+        self.options = options
+        self.progress_bar = tqdm.tqdm(total=options.n_epochs)
 
-    print(interaction.aux_input)
-    interaction.sender_input = interaction.aux_input['vectors_sender']
-    interaction.receiver_input = interaction.aux_input['vectors_receiver']
-    topsim = TopographicSimilarity('hamming', 'edit', is_gumbel=True)
-    topsim.print_message(interaction, 'gumbel', 0)
+    # adapted from egg.core.callbacks.ConsoleLogger
+    def aggregate_print(self, loss: float, logs, mode: str, epoch: int):
+        dump = dict(loss=loss)
+        aggregated_metrics = dict((k, v.mean().item()) for k, v in logs.aux.items())
+        dump.update(aggregated_metrics)
+        dump.update(dict(mode=mode, epoch=epoch))
+            
+        logged = {f"{dump['mode']}/{k}": v for k, v in sorted(dump.items()) if k not in ["mode", "epoch"]}
+        logged['epoch'] = epoch
+        wandb.log(logged)
 
-def topsim_double_swap(interaction1, interaction2):
-    if interaction1.endswith('.pkl'):
-        with open(f'results/{interaction1}', 'rb') as f:
-            interaction1 = pickle.load(f)
+        results = json.dumps(dump)
+        self.results.append(results)
 
-    if interaction2.endswith('.pkl'):
-        with open(f'results/{interaction2}', 'rb') as f:
-            interaction2 = pickle.load(f)
+        if self.options.print_to_console:
+            if mode == "train":
+                self.progress_bar.update(1)
+            else:
+                mode = "test"
 
-    topsim = TopographicSimilarity('hamming', 'edit', is_gumbel=True)
-    interaction1.sender_input = interaction2.sender_input
-    topsim.print_message(interaction1, 'gumbel', 0)
+            output_message = ", ".join(sorted([f"{k}={round(v, 5) if isinstance(v, float) else v}" for k, v in dump.items() if k != "mode"]))
+            output_message = f"mode={mode}: " + output_message
+            self.progress_bar.set_description(output_message, refresh=True)
 
 def run_or_skip_metrics(epoch, max_epoch):
     return epoch < 5 or not epoch % 2 and epoch < 20 or not epoch % 40 or epoch == max_epoch
@@ -53,6 +65,9 @@ class TopographicSimilarityAtEnd(TopographicSimilarity):
         topsim = self.compute_topsim(sender_input, messages, self.sender_input_distance_fn, self.message_distance_fn)
         output = json.dumps(dict(topsim=topsim, mode=mode, epoch=epoch))
         # print(output, flush=True)
+
+        logged = {"epoch": epoch, f"{mode}/topsim": topsim}
+        wandb.log(logged)
 
         with open(self.options._target_folder + "/experiments/topsim_" + str(self.options) + ".json", "a") as f:
             f.write(output + "\n")
@@ -80,11 +95,8 @@ class DisentAtEnd(Disent):
         output = json.dumps(dict(posdis=posdis, bosdis=bosdis, mode=tag, epoch=epoch))
         # print(output, flush=True)
 
+        logged = {"epoch": epoch, f"{tag}/posdis": posdis, f"{tag}/bosdis": bosdis}
+        wandb.log(logged)
+
         with open(self.options._target_folder + "/experiments/dissent_" + str(self.options) + ".json", "a") as f:
             f.write(output + "\n")
-
-
-if __name__ == '__main__':
-    topsim_single('2024_02_02_20_10_46graphvsimage/experiments/interaction_2024_02_02_20_10_46___graph_maxlen_4_vocab7_game5.pkl')
-    # topsim_double_swap('2024_16_01_17_53_28graphvsimage/experiments/interaction_2024_16_01_17_53_28___graph_maxlen_4_vocab7_game5.pkl', 
-    #                    '2024_16_01_17_53_28graphvsimage/experiments/interaction_2024_16_01_17_53_28___image_maxlen_4_vocab7_game5.pkl')

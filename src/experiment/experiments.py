@@ -16,10 +16,10 @@ import wandb
 def ensure_determinism():
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    random.seed(hash("setting random seeds") % 2**32 - 1)
-    np.random.seed(hash("improves reproducibility") % 2**32 - 1)
-    torch.manual_seed(hash("by removing stochasticity") % 2**32 - 1)
-    torch.cuda.manual_seed_all(hash("so runs are repeatable") % 2**32 - 1)
+    random.seed(42)
+    np.random.seed(42)
+    torch.manual_seed(42)
+    torch.cuda.manual_seed_all(42)
     torch.set_num_threads(1)
 
 
@@ -49,13 +49,18 @@ def run_experiment(options: Options):
     ensure_determinism()
 
     print(f"Running {options}")
+
     wandb.init(project="testing-egg", config=options.to_dict())
+    wandb.define_metric("epoch")
+    wandb.define_metric("*", step_metric="epoch")
 
     train_loader, valid_loader = get_dataloaders(options)
     game = get_game(options)
 
     results, model = perform_training(options, train_loader, valid_loader, game)
     interaction_results, interaction = evalute_model(model, options, valid_loader)
+
+    wandb.finish()
 
     return results_to_dataframe(results, interaction_results, interaction, options)
 

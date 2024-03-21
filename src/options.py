@@ -9,9 +9,14 @@ import torch
 class Options:
     experiment: str
     name: str = ""
+
     _target_folder: str = ""
     _timestamp: str = ""
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    batch_size: int = 32
+    batches_per_epoch: int = 32
+    n_epochs: int = 80
 
     game_size: int = 2
     max_len: int = 4
@@ -25,10 +30,6 @@ class Options:
     sender_cell: str = 'gru'  # 'rnn', 'gru', or 'lstm'
     length_cost: float = 0.0
     tau_s: float = 1.0
-
-    batch_size: int = 32
-    batches_per_epoch: int = 32
-    n_epochs: int = 80
 
     n_separated_shapes: int = 8
     n_unseen_shapes: int = 0
@@ -46,7 +47,8 @@ class Options:
         return cls(**{k: v for k, v in vars(d).items() if k in cls.__dataclass_fields__})
     
     def to_dict(self):
-        return {k: v for k, v in vars(self).items() if k in self.__dataclass_fields__}
+        return {k: v for k, v in vars(self).items() if k in self.__dataclass_fields__
+                and not k in ['_timestamp', '_target_folder', 'device', 'print_to_console', 'n_separated_shapes']}
 
     def __post_init__(self):
         out_options = egg.core.init(params=['--random_seed=42',
