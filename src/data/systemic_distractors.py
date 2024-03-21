@@ -1,3 +1,5 @@
+# made by https://github.com/rgalhama
+
 import itertools
 import random
 import numpy as np
