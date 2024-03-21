@@ -6,7 +6,6 @@ from torch_geometric.data import Batch
 class SingleBatch:
     def __init__(self, dataloader: 'ExtendedDataLoader'):
         self.batch_idx = 0
-        # util._set_seed(self.batch_idx)
         self.dataloader = dataloader
         self.options = dataloader.options
         self.target_data = dataloader.dataset.data

@@ -2,7 +2,6 @@ from itertools import combinations, combinations_with_replacement, permutations,
 from dataclasses import dataclass, field
 import os
 import random
-import egg.core.util as util
 
 
 @dataclass
@@ -32,7 +31,6 @@ class DatastringBuilder:
     def datastrings(self):
         if not self._datastrings:
             self._datastrings = ['_'.join([str(p) for p in possibility]) for possibility in self.get_grid_possibilities()]
-            util._set_seed(42)
             random.shuffle(self._datastrings)
         return self._datastrings
 

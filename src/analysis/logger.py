@@ -2,7 +2,7 @@ import tqdm
 import json
 from egg.core.callbacks import ConsoleLogger
 from options import Options
-
+import wandb
 
 class ResultsCollector(ConsoleLogger):
     def __init__(self, results: list, options: Options):
@@ -18,6 +18,7 @@ class ResultsCollector(ConsoleLogger):
         dump.update(aggregated_metrics)
         dump.update(dict(mode=mode, epoch=epoch))
 
+        wandb.log(dump)
         results = json.dumps(dump)
         self.results.append(results)
 
@@ -25,7 +26,7 @@ class ResultsCollector(ConsoleLogger):
             if mode == "train":
                 self.progress_bar.update(1)
             else:
-                mode = " test"
+                mode = "test"
 
             output_message = ", ".join(sorted([f"{k}={round(v, 5) if isinstance(v, float) else v}" for k, v in dump.items() if k != "mode"]))
             output_message = f"mode={mode}: " + output_message

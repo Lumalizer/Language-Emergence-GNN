@@ -1,4 +1,6 @@
 import os
+import wandb
+from dotenv import load_dotenv
 import logging
 import coloredlogs
 import pandas as pd
@@ -6,6 +8,8 @@ from experiment.experiments import run_series_experiments
 from analysis.plot import plot_dataframe
 from options import Options
 
+load_dotenv()
+wandb.login()
 logging.basicConfig(level=logging.INFO)
 coloredlogs.install(level='INFO')
 

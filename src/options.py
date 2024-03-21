@@ -11,14 +11,16 @@ class Options:
     name: str = ""
     _target_folder: str = ""
     _timestamp: str = ""
+    device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
+
     game_size: int = 2
     max_len: int = 4
     vocab_size: int = 20
-
     embedding_size: int = 30
     hidden_size: int = 80
-    device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
+
     sender_target_only: bool = False
+    systemic_distractors: bool = False
 
     sender_cell: str = 'gru'  # 'rnn', 'gru', or 'lstm'
     length_cost: float = 0.0
@@ -31,9 +33,7 @@ class Options:
     n_separated_shapes: int = 8
     n_unseen_shapes: int = 0
 
-    dataset_location: str = 'assets/output'
     print_to_console: bool = True
-    systemic_distractors: bool = False
 
     @property
     def timestamp(self):
@@ -44,6 +44,9 @@ class Options:
     @classmethod
     def from_dict(cls, d: dict):
         return cls(**{k: v for k, v in vars(d).items() if k in cls.__dataclass_fields__})
+    
+    def to_dict(self):
+        return {k: v for k, v in vars(self).items() if k in self.__dataclass_fields__}
 
     def __post_init__(self):
         out_options = egg.core.init(params=['--random_seed=42',
