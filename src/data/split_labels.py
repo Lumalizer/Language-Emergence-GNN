@@ -31,7 +31,7 @@ def split_data_labels(options: Options):
             valid_labels = list(set([l for l in other_labels if any([all([s in l for s in c]) for c in combinations(separated, 2)])]))
             logging.warning(f"{len(valid_labels)} elements in valid. Removed {len(other_labels) - len(valid_labels)} labels from valid set because they contained less than one of {separated}")
 
-    logging.info(f"Train size {len(train_labels)*100 // len(labels)}% ({len(train_labels)}), valid size {len(valid_labels)*100 // len(labels)}% ({len(valid_labels)})")
+    # logging.info(f"Train size {len(train_labels)*100 // len(labels)}% ({len(train_labels)}), valid size {len(valid_labels)*100 // len(labels)}% ({len(valid_labels)})")
 
     assert len(set(train_labels).intersection(set(valid_labels))) == 0
     return train_labels, valid_labels

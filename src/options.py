@@ -9,6 +9,7 @@ import torch
 class Options:
     experiment: str
     name: str = ""
+    project_name: str = None
 
     _target_folder: str = ""
     _timestamp: str = ""

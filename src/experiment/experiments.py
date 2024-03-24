@@ -3,9 +3,9 @@ import logging
 from data.get_loaders import ExtendedDataLoader, get_dataloaders
 from analysis.analyze_experiment import results_to_dataframe
 from analysis.plot import plot_dataframe
-from experiment.game import get_game
+from experiment.language_game import get_game
 from options import Options
-from experiment.train import perform_training
+from experiment.language_game import perform_training
 import pandas as pd
 from datetime import datetime
 import egg.core as core
@@ -39,12 +39,11 @@ class Experiment:
         self.ensure_determinism()
 
         options = self.options
-        logging.info(f"Running {options}")
 
         self.train_loader, self.valid_loader = get_dataloaders(self.options)
         self.game = get_game(self.options)
 
-        wandb.init(project="testing-egg", config=options.to_dict())
+        wandb.init(project=self.options.project_name, config=options.to_dict())
         wandb.define_metric("epoch")
         wandb.define_metric("*", step_metric="epoch")
 
@@ -109,9 +108,10 @@ class ExperimentGroup:
         self.target_folder = f"results/{now + self.name}"
 
         for i, experiment in enumerate(self.experiments):
-            logging.info(f"Running experiment {i+1}/{len(self.experiments)}")
+            logging.info(f"Running experiment {i+1}/{len(self.experiments)} :: {experiment.options}")
             experiment.options._target_folder = self.target_folder
             os.makedirs(self.target_folder+"/experiments", exist_ok=True)
+            experiment.options.project_name = self.name
             experiment.run()
 
         self.results = pd.concat([e.results for e in self.experiments])

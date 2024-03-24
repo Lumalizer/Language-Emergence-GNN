@@ -3,8 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from options import Options
-from experiment.graph_embeddings import GraphEmbeddings
-from experiment.image_embeddings import ImageEmbeddings
+from experiment.models.graph_embeddings import GraphEmbeddings
+from experiment.models.image_embeddings import ImageEmbeddings
 
 class InformedSender(nn.Module):
     def __init__(self, options: Options):
