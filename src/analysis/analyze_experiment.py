@@ -2,27 +2,8 @@ import json
 import os
 import uuid
 import pandas as pd
-import statistics
 from options import Options
 from analysis.vocab import vocab_error_analysis
-
-
-def get_experiment_means(results: list[pd.DataFrame]):
-    if not results:
-        return pd.DataFrame()
-    elif len(results) == 1:
-        return results[0]
-
-    to_mean = ['acc', 'loss', 'baseline', 'sender_entropy', 'receiver_entropy']
-    r = results[0]
-    for element in to_mean:
-        try:
-            target = [r[element] for r in results]
-            means = [statistics.mean(target) for target in zip(*target)]
-            r[element] = means
-        except KeyError:
-            pass
-    return r
 
 
 def results_to_dataframe(options: Options, results: str, eval_train: pd.DataFrame, eval_test: pd.DataFrame, save: bool = True) -> pd.DataFrame:

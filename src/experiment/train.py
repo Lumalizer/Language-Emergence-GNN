@@ -6,13 +6,16 @@ from analysis.callbacks import ResultsCollector, DisentAtEnd, TopographicSimilar
 
 def perform_training(options: Options, train_loader, valid_loader, game):
     results = []
+    callbacks = [ResultsCollector(results, options)]
+    if options.enable_analysis:
+        callbacks.extend([DisentAtEnd(options), TopographicSimilarityAtEnd(options)])
 
     trainer = core.Trainer(
         game=game,
         optimizer=core.build_optimizer(game.parameters()),
         train_data=train_loader,
         validation_data=valid_loader,
-        callbacks=[ResultsCollector(results, options), DisentAtEnd(options), TopographicSimilarityAtEnd(options)],
+        callbacks=callbacks,
         device=options.device,
     )
 

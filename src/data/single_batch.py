@@ -15,7 +15,7 @@ class SingleBatch:
         return self
 
     def __next__(self):
-        limit = self.options.batches_per_epoch * (9*self.options.eval + 1)
+        limit = self.options.batches_per_epoch * (9*self.options._eval*self.options.enable_analysis + 1)
         if self.batch_idx >= limit:
             raise StopIteration()
 

@@ -47,6 +47,21 @@ class ResultsCollector(ConsoleLogger):
 def run_or_skip_metrics(epoch, max_epoch):
     return epoch < 5 or not epoch % 2 and epoch < 20 or not epoch % 40 or epoch == max_epoch
 
+class Attributizer:
+    def __init__(self):
+        self.attrs = {}
+
+    def process_string(self, input: str):
+        result = []
+        parts = input.split('_')
+
+        for part in parts:
+            if part not in self.attrs:
+                self.attrs[part] = len(self.attrs)
+            result.append(self.attrs[part])
+        
+        return result
+
 class TopographicSimilarityAtEnd(TopographicSimilarity):
     def __init__(self, options: Options):
         super().__init__('hamming','edit', is_gumbel=True, compute_topsim_train_set=True)
@@ -79,22 +94,6 @@ class TopographicSimilarityAtEnd(TopographicSimilarity):
 
         with open(self.options._target_folder + "/experiments/topsim_" + str(self.options) + ".json", "a") as f:
             f.write(output + "\n")
-
-class Attributizer:
-    def __init__(self):
-        self.attrs = {}
-
-    def process_string(self, input: str):
-        result = []
-        parts = input.split('_')
-
-        for part in parts:
-            if part not in self.attrs:
-                self.attrs[part] = len(self.attrs)
-            result.append(self.attrs[part])
-        
-        return result
-
 
 class DisentAtEnd(Disent):
     def __init__(self, options: Options):

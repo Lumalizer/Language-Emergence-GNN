@@ -4,17 +4,15 @@ import plotly.express as px
 import pandas as pd
 
 
-def extract_train_data(df: pd.DataFrame):
-    mask = df['mode'] == 'train'
-    return df[mask]
-
-
-def extract_test_data(df: pd.DataFrame):
-    mask = df['mode'] == 'test'
-    return df[mask]
-
-
 def plot_dataframe(df: pd.DataFrame, title: str, show_plot=True, save=True, save_target=None, mode='both', facet_col="max_len", facet_row="game_size"):
+    def extract_train_data(df: pd.DataFrame):
+        mask = df['mode'] == 'train'
+        return df[mask]
+
+
+    def extract_test_data(df: pd.DataFrame):
+        mask = df['mode'] == 'test'
+        return df[mask]
     colors = ["#FFA500", "#6495ED"]
 
     if mode == 'test':
@@ -54,16 +52,6 @@ def plot_dataframe(df: pd.DataFrame, title: str, show_plot=True, save=True, save
     )
 
     figure.update_traces(mode='lines+markers', marker=dict(size=4, line=dict(width=1)), line=dict(width=6))
-
-    # cleans the axis titles, but depends on how many subplots there are
-    # for i in range(15):
-    #     figure['layout'][f'yaxis{i+1 if i else ""}']['title']['text'] = ''
-
-    # figure['layout']['yaxis9']['title']['text'] = 'accuracy'
-
-    # figure['layout']['xaxis']['title']['text'] = ''
-    # figure['layout']['xaxis2']['title']['text'] = 'epochs (1024 games/epoch)'
-    # figure['layout']['xaxis3']['title']['text'] = ''
 
     show_plot and figure.show()
 

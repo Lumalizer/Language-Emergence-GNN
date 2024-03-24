@@ -37,8 +37,10 @@ class Options:
     print_analysis: bool = False
     print_progress: bool = True
 
+    enable_analysis: bool = True
+
     results: dict = field(default_factory=dict)
-    eval: bool = False
+    _eval: bool = False
 
     @property
     def timestamp(self):

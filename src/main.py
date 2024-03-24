@@ -1,11 +1,8 @@
-import os
 import wandb
 from dotenv import load_dotenv
 import logging
 import coloredlogs
-import pandas as pd
-from experiment.experiments import run_series_experiments
-from analysis.plot import plot_dataframe
+from experiment.experiments import Experiment, ExperimentGroup
 from options import Options
 
 load_dotenv()
@@ -13,10 +10,9 @@ wandb.login()
 logging.basicConfig(level=logging.INFO)
 coloredlogs.install(level='INFO')
 
-experiments = [
-    Options(experiment='both', game_size=5, max_len=4, vocab_size=7, n_epochs=200, sender_target_only=True, systemic_distractors=False),
-    # Options(experiment='both', game_size=5, max_len=4, vocab_size=12, n_epochs=1200, sender_target_only=True, systemic_distractors=True),
-]
+experiment = ExperimentGroup('base', [
+    Experiment(Options(experiment='both', game_size=5, max_len=6, vocab_size=55, n_epochs=10, sender_target_only=True, systemic_distractors=False, enable_analysis=False)),
+])
 
-results, target_folder = run_series_experiments(experiments, 'systemic_', n_repetitions=1)
-plot_dataframe(results, "Graph vs Image representations", mode="both", facet_col='mode', facet_row='game_size', save_target=target_folder)
+experiment.run()
+experiment.plot_dataframe()
