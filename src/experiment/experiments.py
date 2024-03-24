@@ -1,5 +1,5 @@
 import logging
-from data.get_loaders import get_dataloaders
+from data.get_loaders import ExtendedDataLoader, get_dataloaders
 from analysis.analyze_experiment import get_experiment_means, results_to_dataframe
 from experiment.game import get_game
 from options import Options
@@ -21,7 +21,10 @@ def ensure_determinism():
     torch.cuda.manual_seed_all(42)
 
 
-def evalute_model(model, options, loader):
+def evalute_model(model, loader: ExtendedDataLoader):
+    options = loader.options
+    options.eval = True
+
     target_labels = []
     distractor_labels = []
 
@@ -40,6 +43,7 @@ def evalute_model(model, options, loader):
     message = [parse_message(m) for m in interaction.message.tolist()]
     accuracies = interaction.aux['acc'].tolist()
 
+    options.eval = False
     return pd.DataFrame({'target': target_labels, 'distractors': distractor_labels, 
                          'message': message, 'accuracy': accuracies}), interaction
 
@@ -56,8 +60,8 @@ def run_experiment(options: Options):
     game = get_game(options)
 
     results, model = perform_training(options, train_loader, valid_loader, game)
-    eval_train, interaction_train = evalute_model(model, options, train_loader)
-    eval_test, interaction_test = evalute_model(model, options, valid_loader)
+    eval_train, interaction_train = evalute_model(model, train_loader)
+    eval_test, interaction_test = evalute_model(model, valid_loader)
 
     wandb.finish()
 

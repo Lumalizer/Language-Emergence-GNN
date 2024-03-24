@@ -1,5 +1,5 @@
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import egg.core
 from datetime import datetime
 import torch
@@ -37,6 +37,9 @@ class Options:
     print_analysis: bool = False
     print_progress: bool = True
 
+    results: dict = field(default_factory=dict)
+    eval: bool = False
+
     @property
     def timestamp(self):
         if self._timestamp == "":
@@ -49,7 +52,8 @@ class Options:
     
     def to_dict(self):
         return {k: v for k, v in vars(self).items() if k in self.__dataclass_fields__
-                and not k in ['_timestamp', '_target_folder', 'device', 'print_analysis', 'print_progress', 'n_separated_shapes']}
+                and not k in ['_timestamp', '_target_folder', 'eval', 'device',
+                              'print_analysis', 'print_progress', 'n_separated_shapes']}
 
     def __post_init__(self):
         out_options = egg.core.init(params=['--random_seed=42',

@@ -1,5 +1,4 @@
 from egg.core.language_analysis import TopographicSimilarity, Disent
-import pickle
 import torch
 import json
 from egg.core import Interaction
@@ -7,7 +6,6 @@ from options import Options
 import tqdm
 import json
 from egg.core.callbacks import ConsoleLogger
-from options import Options
 import wandb
 import warnings
 from scipy import stats
@@ -66,16 +64,37 @@ class TopographicSimilarityAtEnd(TopographicSimilarity):
         messages = logs.message.argmax(dim=-1) if self.is_gumbel else logs.message
         messages = [msg.tolist() for msg in messages]
 
-        sender_input = torch.flatten(logs.aux_input['vectors_sender'], start_dim=1).detach()
+        # sender_input = torch.flatten(logs.aux_input['vectors_sender'], start_dim=1)
+
+        attrs = Attributizer()
+        labels_sender = self.options.results['labels_sender']
+        labels_sender = torch.tensor([[attrs.process_string(l) for l in labels] for labels in labels_sender])
+        sender_input = torch.flatten(labels_sender, start_dim=1)
+
         topsim = self.compute_topsim(sender_input, messages, self.sender_input_distance_fn, self.message_distance_fn)
         output = json.dumps(dict(topsim=topsim, mode=mode, epoch=epoch))
-        # print(output, flush=True)
 
         logged = {"epoch": epoch, f"{mode}/topsim": topsim}
         wandb.log(logged)
 
         with open(self.options._target_folder + "/experiments/topsim_" + str(self.options) + ".json", "a") as f:
             f.write(output + "\n")
+
+class Attributizer:
+    def __init__(self):
+        self.attrs = {}
+
+    def process_string(self, input: str):
+        result = []
+        parts = input.split('_')
+
+        for part in parts:
+            if part not in self.attrs:
+                self.attrs[part] = len(self.attrs)
+            result.append(self.attrs[part])
+        
+        return result
+
 
 class DisentAtEnd(Disent):
     def __init__(self, options: Options):
@@ -93,12 +112,17 @@ class DisentAtEnd(Disent):
 
     def print_message(self, logs: Interaction, tag: str, epoch: int):
         message = logs.message.argmax(dim=-1) if self.is_gumbel else logs.message
-        sender_input = torch.flatten(logs.aux_input['vectors_sender'], start_dim=1)
+        # sender_input = torch.flatten(logs.aux_input['vectors_sender'], start_dim=1)
+
+
+        attrs = Attributizer()
+        labels_sender = self.options.results['labels_sender']
+        labels_sender = torch.tensor([[attrs.process_string(l) for l in labels] for labels in labels_sender])
+        sender_input = torch.flatten(labels_sender, start_dim=1)        
     
         posdis = self.posdis(sender_input, message) if self.compute_posdis else None
         bosdis = self.bosdis(sender_input, message, self.vocab_size) if self.compute_bosdis else None
         output = json.dumps(dict(posdis=posdis, bosdis=bosdis, mode=tag, epoch=epoch))
-        # print(output, flush=True)
 
         logged = {"epoch": epoch, f"{tag}/posdis": posdis, f"{tag}/bosdis": bosdis}
         wandb.log(logged)
