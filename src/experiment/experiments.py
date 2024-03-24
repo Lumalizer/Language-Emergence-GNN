@@ -71,7 +71,8 @@ class Experiment:
             distractor_labels.append(distractors) 
 
         loader.collect_labels = collect_labels
-        loss, interaction = self.model.eval(loader)
+        with torch.no_grad():
+            loss, interaction = self.model.eval(loader)
         interaction: core.Interaction
 
         vocab = {i: i for i in range(options.vocab_size)}

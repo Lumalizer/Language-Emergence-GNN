@@ -1,4 +1,3 @@
-import logging
 from dataclasses import dataclass, field
 import egg.core
 from datetime import datetime

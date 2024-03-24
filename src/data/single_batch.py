@@ -10,13 +10,15 @@ class SingleBatch:
         self.options = dataloader.options
         self.target_data = dataloader.dataset.data
         self.labels = dataloader.dataset.labels
+        self.non_assessed_labels = list(range(len(self.labels)))
 
     def __iter__(self):
         return self
 
     def __next__(self):
         limit = self.options.batches_per_epoch * (9*self.options._eval*self.options.enable_analysis + 1)
-        if self.batch_idx >= limit:
+        if (self.batch_idx >= limit and not self.options._eval) \
+            or len(self.non_assessed_labels) < self.options.batch_size:
             raise StopIteration()
 
         vectors_sender, y, vectors_receiver, indexes_sender, indexes_receiver, aux_input = self._get_batch()
@@ -37,6 +39,12 @@ class SingleBatch:
 
     def get_randomized_data(self):
         data_indexes_sender = torch.randint(len(self.target_data), (self.options.batch_size, self.options.game_size))
+
+        if self.options._eval:
+            self.targets = torch.tensor(self.non_assessed_labels[:self.options.batch_size], device=self.options.device)
+            self.non_assessed_labels = self.non_assessed_labels[self.options.batch_size:]
+            data_indexes_sender[:, 0] = self.targets
+
         return data_indexes_sender.to(self.options.device)
     
     def get_systematic_distractors(self):
@@ -54,7 +62,12 @@ class SingleBatch:
             y = permutes[:, 0]
         else:
             indexes_sender = self.get_randomized_data()
-            y = permutes.argmin(dim=1)
+
+            if self.options._eval:
+                y = permutes[:, 0]
+            else:
+                y = permutes.argmin(dim=1)
+
 
         indexes_receiver = indexes_sender[torch.arange(self.options.batch_size).unsqueeze(1), permutes]
 
