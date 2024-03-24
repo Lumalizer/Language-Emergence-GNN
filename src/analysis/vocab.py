@@ -121,7 +121,7 @@ def vocab_error_analysis(df: pd.DataFrame) -> str:
     errors = df[df['accuracy'] != 1.0]
 
     equal = df[df['has_equal_shapes']]
-    print(equal.head(10))
+    # print(equal.head(10))
 
     # make a dict with message as key and count as value
     messages = df['message'].apply(str).tolist()

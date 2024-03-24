@@ -4,12 +4,10 @@ from data.single_batch import SingleBatch
 from data.split_labels import split_data_labels
 from options import Options
 from torch.utils.data import DataLoader
-from analysis.timer import timer
 from typing import Union
 from random import sample
-import numpy as np
 
-@timer
+
 def get_dataloaders(options: Options):
     train_labels, valid_labels = split_data_labels(options)
 

@@ -34,7 +34,8 @@ class Options:
     n_separated_shapes: int = 8
     n_unseen_shapes: int = 0
 
-    print_to_console: bool = True
+    print_analysis: bool = False
+    print_progress: bool = True
 
     @property
     def timestamp(self):
@@ -48,7 +49,7 @@ class Options:
     
     def to_dict(self):
         return {k: v for k, v in vars(self).items() if k in self.__dataclass_fields__
-                and not k in ['_timestamp', '_target_folder', 'device', 'print_to_console', 'n_separated_shapes']}
+                and not k in ['_timestamp', '_target_folder', 'device', 'print_analysis', 'print_progress', 'n_separated_shapes']}
 
     def __post_init__(self):
         out_options = egg.core.init(params=['--random_seed=42',

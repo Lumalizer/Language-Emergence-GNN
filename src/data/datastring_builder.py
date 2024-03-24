@@ -30,7 +30,7 @@ class DatastringBuilder:
     @property
     def datastrings(self):
         if not self._datastrings:
-            self._datastrings = ['_'.join([str(p) for p in possibility]) for possibility in self.get_grid_possibilities()]
+            self._datastrings = sorted(['_'.join([str(p) for p in possibility]) for possibility in self.get_grid_possibilities()])
             random.shuffle(self._datastrings)
         return self._datastrings
 

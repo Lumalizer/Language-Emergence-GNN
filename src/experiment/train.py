@@ -4,7 +4,6 @@ from analysis.timer import timer
 from analysis.callbacks import ResultsCollector, DisentAtEnd, TopographicSimilarityAtEnd
 
 
-@timer
 def perform_training(options: Options, train_loader, valid_loader, game):
     results = []
 

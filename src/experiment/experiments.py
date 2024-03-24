@@ -15,15 +15,13 @@ import wandb
 
 def ensure_determinism():
     torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
     random.seed(42)
     np.random.seed(42)
     torch.manual_seed(42)
     torch.cuda.manual_seed_all(42)
-    torch.set_num_threads(1)
 
 
-def evalute_model(model, options, valid_loader):
+def evalute_model(model, options, loader):
     target_labels = []
     distractor_labels = []
 
@@ -34,8 +32,8 @@ def evalute_model(model, options, valid_loader):
         target_labels.append(target)
         distractor_labels.append(distractors) 
 
-    valid_loader.collect_labels = collect_labels
-    loss, interaction = model.eval(valid_loader)
+    loader.collect_labels = collect_labels
+    loss, interaction = model.eval(loader)
     interaction: core.Interaction
 
     vocab = {i: i for i in range(options.vocab_size)}
@@ -48,7 +46,7 @@ def evalute_model(model, options, valid_loader):
 def run_experiment(options: Options):
     ensure_determinism()
 
-    print(f"Running {options}")
+    logging.info(f"Running {options}")
 
     wandb.init(project="testing-egg", config=options.to_dict())
     wandb.define_metric("epoch")
@@ -58,11 +56,12 @@ def run_experiment(options: Options):
     game = get_game(options)
 
     results, model = perform_training(options, train_loader, valid_loader, game)
-    interaction_results, interaction = evalute_model(model, options, valid_loader)
+    eval_train, interaction_train = evalute_model(model, options, train_loader)
+    eval_test, interaction_test = evalute_model(model, options, valid_loader)
 
     wandb.finish()
 
-    return results_to_dataframe(results, interaction_results, interaction, options)
+    return results_to_dataframe(options, results, eval_train, eval_test)
 
 
 def run_experiments(options: Options, n_repetitions: int = 1):
@@ -77,7 +76,8 @@ def run_experiments(options: Options, n_repetitions: int = 1):
     results_graph = []
     results_img = []
     for i in range(n_repetitions):
-        logging.info(f"Running repetition {i+1}/{n_repetitions}")
+        if n_repetitions > 1: 
+            logging.info(f"Running repetition {i+1}/{n_repetitions}")
         run_graph and results_graph.append(run_experiment(graph_options))
         run_image and results_img.append(run_experiment(image_options))
 

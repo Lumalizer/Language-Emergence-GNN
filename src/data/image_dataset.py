@@ -6,7 +6,7 @@ from data.image_builder import ImageBuilder
 from torchvision.transforms import Resize
 from data.systemic_distractors import SystematicDistractors
 
-resize = Resize((140, 140), antialias=True)
+resize = Resize((120, 120), antialias=True)
 ImageBuilder().assure_images()
 
 
