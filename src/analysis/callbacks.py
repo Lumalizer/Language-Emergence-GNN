@@ -3,12 +3,17 @@ import torch
 import json
 from egg.core import Interaction
 from options import Options
-import tqdm
 import json
 from egg.core.callbacks import ConsoleLogger
 import wandb
 import warnings
 from scipy import stats
+from IPython.core.getipython import get_ipython
+
+if get_ipython().__class__.__name__ == 'ZMQInteractiveShell':
+    from tqdm.notebook import tqdm
+else:
+    from tqdm import tqdm
 
 warnings.filterwarnings('ignore', category=stats.ConstantInputWarning)
 
@@ -18,7 +23,7 @@ class ResultsCollector(ConsoleLogger):
         self.results = results
         self.options = options
         if options.print_progress:
-            self.progress_bar = tqdm.tqdm(total=options.n_epochs)
+            self.progress_bar = tqdm(total=options.n_epochs)
 
     # adapted from egg.core.callbacks.ConsoleLogger
     def aggregate_print(self, loss: float, logs, mode: str, epoch: int):

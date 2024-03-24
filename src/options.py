@@ -68,10 +68,6 @@ class Options:
             if k not in self.__dataclass_fields__:
                 setattr(self, k, v)
 
-        if self.embedding_size % 3 != 0:
-            self.embedding_size = self.embedding_size + (3 - self.embedding_size % 3)
-            logging.warning(f"embedding_size must be a multiple of 3, setting to {self.embedding_size}")
-
         if not 0 <= self.n_unseen_shapes <= 2:
             raise ValueError(f"n_unseen_shapes_per_test_element must be 0, 1 or 2, got {self.n_unseen_shapes}")
 
