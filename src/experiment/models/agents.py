@@ -23,7 +23,7 @@ class InformedSender(nn.Module):
     def forward(self, x, _aux_input):
         x = self.embedder(_aux_input['data_sender'])
         x = x.view(self.options.batch_size, self.view_size, -1)
-        _aux_input['vectors_sender'] = x
+        # _aux_input['vectors_sender'] = x
 
         emb = x.unsqueeze(dim=1)                # batch_size x 1 x game_size x embedding_size
         h = self.conv1(emb)                     # batch_size x hidden_size x 1 x embedding_size
@@ -46,7 +46,7 @@ class Receiver(nn.Module):
     def forward(self, signal, x, _aux_input):
         x = self.embedder(_aux_input['data_receiver'])
         x = x.view(self.options.batch_size, self.options.game_size, -1)
-        _aux_input['vectors_receiver'] = x
+        # _aux_input['vectors_receiver'] = x
 
         h_s = self.lin1(signal)                 # embed the signal
         h_s = h_s.unsqueeze(dim=1)              # batch_size x embedding_size

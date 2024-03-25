@@ -10,14 +10,19 @@ class SingleBatch:
         self.options = dataloader.options
         self.target_data = dataloader.dataset.data
         self.labels = dataloader.dataset.labels
-        self.non_assessed_labels = list(range(len(self.labels)))
+        
+        if self.options.systemic_distractors:
+            self.non_assessed_labels = list(range(len(self.dataloader.dataset.systematic_games.targets)))
+        else:
+            self.non_assessed_labels = list(range(len(self.labels)))
+
+        random.shuffle(self.non_assessed_labels)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        limit = self.options.batches_per_epoch * (9*self.options._eval*self.options.enable_analysis + 1)
-        if (self.batch_idx >= limit and not self.options._eval) \
+        if (self.batch_idx >= self.options.batches_per_epoch and not self.options._eval) \
             or len(self.non_assessed_labels) < self.options.batch_size:
             raise StopIteration()
 
@@ -49,7 +54,13 @@ class SingleBatch:
     
     def get_systematic_distractors(self):
         systematic = self.dataloader.dataset.systematic_games
-        indexes = random.sample(range(len(systematic.targets)), self.options.batch_size)
+
+        if self.options._eval:
+            indexes = self.non_assessed_labels[:self.options.batch_size]
+            self.non_assessed_labels = self.non_assessed_labels[self.options.batch_size:]
+        else:
+            indexes = random.sample(range(len(systematic.targets)), self.options.batch_size)
+
         graphstrings = [[systematic.targets[i]]+random.sample(systematic.distractors[i], k=4) for i in indexes]
         ids = [[self.dataloader.dataset.reverse_ids[ele] for ele in elements] for elements in graphstrings]
         return torch.tensor(ids).long().to(self.options.device)

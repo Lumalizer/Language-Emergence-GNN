@@ -48,8 +48,8 @@ class Experiment:
         wandb.define_metric("*", step_metric="epoch")
 
         results, self.model = perform_training(options, self.train_loader, self.valid_loader, self.game)
-        self.eval_train, interaction_train = self.evaluate(self.train_loader)
-        self.eval_test, interaction_test = self.evaluate(self.valid_loader)
+        self.eval_train = self.evaluate(self.train_loader)
+        self.eval_test = self.evaluate(self.valid_loader)
 
         wandb.finish()
 
@@ -81,7 +81,7 @@ class Experiment:
 
         options._eval = False
         return pd.DataFrame({'target': target_labels, 'distractors': distractor_labels, 
-                            'message': message, 'accuracy': accuracies}), interaction
+                            'message': message, 'accuracy': accuracies})
 
 
 @dataclass
@@ -119,4 +119,4 @@ class ExperimentGroup:
         self.results.to_csv(f"{self.target_folder}/results.csv")
 
     def plot_dataframe(self, name=None, mode="both", facet_col='mode', facet_row='game_size'):
-        plot_dataframe(self.results, name if name else self.name, mode=mode, facet_col=facet_col, facet_row=facet_row, save_target=self.target_folder)
+        plot_dataframe(self.results, name if name else self.name, mode=mode, facet_col=facet_col, facet_row=facet_row, save_target=self.target_folder, show_plot=False)
