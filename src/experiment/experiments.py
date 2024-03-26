@@ -34,7 +34,8 @@ class Experiment:
         np.random.seed(42)
         torch.manual_seed(42)
         torch.cuda.manual_seed_all(42)
-
+        torch.set_num_threads(1)
+        
     def run(self):
         self.ensure_determinism()
 
@@ -111,7 +112,6 @@ class ExperimentGroup:
         for i, experiment in enumerate(self.experiments):
             logging.info(f"Running experiment {i+1}/{len(self.experiments)} :: {experiment.options}")
             experiment.options._target_folder = self.target_folder
-            os.makedirs(self.target_folder+"/experiments", exist_ok=True)
             experiment.options.project_name = self.name
             experiment.run()
 

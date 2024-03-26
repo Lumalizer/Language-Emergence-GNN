@@ -63,12 +63,14 @@ class SystematicDistractors():
 
         self.grid_size=4
         self.grid_shape=(2,2)
-        self.figures=set(figures)
+        self.figures=sorted(list(set(figures)))
         self.nfigures=len(figures)
         self.allow_repetitions=allow_repetitions
         self.n_figsxgrid=n_figsxgrid
         self.targets=[]
         self.distractors=[]
+
+        random.seed(42)
 
         #Generate all possible targets
         self.targets=self.getTargets()
@@ -120,7 +122,7 @@ class SystematicDistractors():
         #Combine figures with their position in the grid
         targets=itertools.product(figure_combs, grid_positions)
         #targets: iterator over ((fig1,fig2),(position_fig1, position_fig2))
-        return list(targets)
+        return sorted(list(targets))
 
     def getCombinationsFigures(self):
         """Get all the possible combinations of n_figsxgrid
@@ -138,7 +140,7 @@ class SystematicDistractors():
         returns all the possible ways in which they can be located in a grid
         :return: iterator with linear index of occupied position
          """
-        return itertools.permutations(range(1, self.grid_size+1), self.n_figsxgrid)
+        return sorted(list(itertools.permutations(range(1, self.grid_size+1), self.n_figsxgrid)))
 
 
     def prod2Grid(self, comb):
@@ -193,7 +195,7 @@ class SystematicDistractors():
         #Change both x and y (only if target is diagonal)
         if self.isDiagonal(target):
             distractors.append(self.toggleCoord(self.toggleCoord(target,0), 1))
-        return distractors
+        return sorted(distractors)
 
 
     def replaceFigure(self, target, fig_index):
@@ -211,14 +213,13 @@ class SystematicDistractors():
 
         if self.allow_repetitions:
             #Remove only current figure from the available options to substitute for
-            options=self.figures - set([figs[fig_index]])
+            options=set(self.figures) - set([figs[fig_index]])
         else:
             #Remove current figures in the grid from options to substitute for
-            options=self.figures-set(figs)
+            options=set(self.figures)-set(figs)
 
         #Pick another random figure
-        new_figs[fig_index] = random.choice(list(options))
-
+        new_figs[fig_index] = random.choice(sorted(list(options)))
         return (tuple(new_figs), positions)
 
     @staticmethod
@@ -262,5 +263,3 @@ class SystematicDistractors():
 
 if __name__=="__main__":
     game=SystematicDistractors(figures=['a', 'b', 'c'], allow_repetitions=False)
-    print(game.targets[0])
-    print(game.distractors[0])

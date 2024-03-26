@@ -40,7 +40,7 @@ def get_dataloaders(options: Options):
 
 class ExtendedDataLoader(DataLoader):
     def __init__(self, dataset: Union[ShapesPosImgDataset, ShapesPosGraphDataset], options: Options, collect_labels=None):
-        super().__init__(dataset, batch_size=options.batch_size, shuffle=False, drop_last=True)
+        super().__init__(dataset, batch_size=options.batch_size, shuffle=False, drop_last=True, num_workers=1)
         self.dataset: Union[ShapesPosImgDataset, ShapesPosGraphDataset]
         self.options = options
         self.collect_labels = collect_labels
