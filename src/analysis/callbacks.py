@@ -8,12 +8,17 @@ from egg.core.callbacks import ConsoleLogger
 import wandb
 import warnings
 from scipy import stats
-from IPython.core.getipython import get_ipython
+import os
 
-if get_ipython().__class__.__name__ == 'ZMQInteractiveShell':
-    from tqdm.notebook import tqdm
-else:
+try:
+    from IPython.core.getipython import get_ipython
+    if get_ipython().__class__.__name__ == 'ZMQInteractiveShell':
+        from tqdm.notebook import tqdm
+    else:
+        from tqdm import tqdm
+except (ImportError, AttributeError):
     from tqdm import tqdm
+
 
 warnings.filterwarnings('ignore', category=stats.ConstantInputWarning)
 
@@ -97,6 +102,7 @@ class TopographicSimilarityAtEnd(TopographicSimilarity):
         logged = {"epoch": epoch, f"{mode}/topsim": topsim}
         wandb.log(logged)
 
+        os.makedirs(self.options._target_folder+"/experiments", exist_ok=True)
         with open(self.options._target_folder + "/experiments/topsim_" + str(self.options) + ".json", "a") as f:
             f.write(output + "\n")
 
@@ -131,5 +137,6 @@ class DisentAtEnd(Disent):
         logged = {"epoch": epoch, f"{tag}/posdis": posdis, f"{tag}/bosdis": bosdis}
         wandb.log(logged)
 
+        os.makedirs(self.options._target_folder+"/experiments", exist_ok=True)
         with open(self.options._target_folder + "/experiments/dissent_" + str(self.options) + ".json", "a") as f:
             f.write(output + "\n")

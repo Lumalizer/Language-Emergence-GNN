@@ -55,8 +55,8 @@ class Options:
     
     def to_dict(self):
         return {k: v for k, v in vars(self).items() if k in self.__dataclass_fields__
-                and not k in ['_timestamp', '_target_folder', 'eval', 'device',
-                              'print_analysis', 'print_progress', 'n_separated_shapes']}
+                and not k in ['_timestamp', '_target_folder', 'eval', 'device', 'enable_analysis', 
+                              'print_analysis', 'print_progress', 'n_separated_shapes', 'results']}
 
     def __post_init__(self):
         out_options = egg.core.init(params=['--random_seed=42',

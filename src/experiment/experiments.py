@@ -44,13 +44,16 @@ class Experiment:
         self.train_loader, self.valid_loader = get_dataloaders(self.options)
         self.game = get_game(self.options)
 
-        wandb.init(project=self.options.project_name, config=options.to_dict())
+        run = wandb.init(project=self.options.project_name, config=options.to_dict(), settings=wandb.Settings(_disable_stats=True, _disable_meta=True))
         wandb.define_metric("epoch")
         wandb.define_metric("*", step_metric="epoch")
 
         results, self.model = perform_training(options, self.train_loader, self.valid_loader, self.game)
         self.eval_train = self.evaluate(self.train_loader)
         self.eval_test = self.evaluate(self.valid_loader)
+
+        run.log({'train_eval': wandb.Table(dataframe=self.eval_train)})
+        run.log({'test_eval': wandb.Table(dataframe=self.eval_test)})
 
         wandb.finish()
 
