@@ -6,13 +6,12 @@ from data.image_builder import ImageBuilder
 from torchvision.transforms import Resize
 from data.systemic_distractors import SystematicDistractors
 
-resize = Resize((120, 120), antialias=True)
-ImageBuilder().assure_images()
-
 
 class ShapesPosImgDataset(Dataset):
     def __init__(self, labels: list[str], options: Options, excluded_graphstrings=[]):
+        ImageBuilder().assure_images()
         self.image_path = f"assets/output/"
+        self.resize = Resize((options.image_size, options.image_size), antialias=True)
         self.labels = labels
         self.reverse_ids = {l: i for i, l in enumerate(labels)}
         self.data = torch.stack([self.load(filename) for filename in labels]).to(options.device)
@@ -25,7 +24,7 @@ class ShapesPosImgDataset(Dataset):
         super().__init__()
 
     def load(self, filename, suffix=".png"):
-        return resize(read_image(self.image_path+filename+suffix, mode=ImageReadMode.UNCHANGED).float() / 255.0)
+        return self.resize(read_image(self.image_path+filename+suffix, mode=ImageReadMode.UNCHANGED).float() / 255.0)
 
     def __len__(self):
         return len(self.labels)

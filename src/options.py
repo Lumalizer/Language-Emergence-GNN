@@ -23,6 +23,7 @@ class Options:
     vocab_size: int = 20
     embedding_size: int = 30
     hidden_size: int = 80
+    image_size: int = 120
 
     sender_target_only: bool = False
     systemic_distractors: bool = False

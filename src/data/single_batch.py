@@ -11,7 +11,9 @@ class SingleBatch:
         self.target_data = dataloader.dataset.data
         self.labels = dataloader.dataset.labels
         
-        if self.options.systemic_distractors:
+        if not self.options.enable_analysis:
+            self.non_assessed_labels = list(range(self.options.batch_size))
+        elif self.options.systemic_distractors:
             self.non_assessed_labels = list(range(len(self.dataloader.dataset.systematic_games.targets)))
         else:
             self.non_assessed_labels = list(range(len(self.labels)))
@@ -61,7 +63,8 @@ class SingleBatch:
         else:
             indexes = random.sample(range(len(systematic.targets)), self.options.batch_size)
 
-        graphstrings = [[systematic.targets[i]]+random.sample(systematic.distractors[i], k=4) for i in indexes]
+        graphstrings = [[systematic.targets[i]]+random.sample(systematic.distractors[i], 
+                                                              k=self.options.game_size-1) for i in indexes]
         ids = [[self.dataloader.dataset.reverse_ids[ele] for ele in elements] for elements in graphstrings]
         return torch.tensor(ids).long().to(self.options.device)
 
@@ -70,15 +73,13 @@ class SingleBatch:
 
         if self.options.systemic_distractors:
             indexes_sender = self.get_systematic_distractors()
-            y = permutes[:, 0]
         else:
             indexes_sender = self.get_randomized_data()
 
-            if self.options._eval:
-                y = permutes[:, 0]
-            else:
-                y = permutes.argmin(dim=1)
-
+        if self.options._eval or self.options.systemic_distractors:
+            y = permutes[:, 0]
+        else:
+            y = permutes.argmin(dim=1)
 
         indexes_receiver = indexes_sender[torch.arange(self.options.batch_size).unsqueeze(1), permutes]
 
